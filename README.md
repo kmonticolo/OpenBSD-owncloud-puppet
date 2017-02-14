@@ -9,4 +9,4 @@ Then install owncloud using:
 ```
 puppet apply site.pp
 ```
-After installation restart server and go to https://<IP>/index.html/index.php to finish installation.
+After installation restart server and go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
