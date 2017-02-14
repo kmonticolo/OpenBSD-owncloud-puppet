@@ -1,3 +1,5 @@
+include stdlib
+# puppet module install puppetlabs-stdlib --version 4.15.0
 #Path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 # puppet module install puppetlabs-postgresql --version 4.8.0
 
@@ -6,13 +8,15 @@ $mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/packag
 $pkgmirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/${arch}/"
 $pgpass="/home/vagrant/.pgpass"
 $owncloud_db_pass="d5a148be21b8f643105759af71bea852"
+$key="/etc/ssl/private/${::fqdn}.key"
+$cert="/etc/ssl/${::fqdn}.crt"
 
-exec { 'set clock': 
-       command => 'rdate ntp.task.gda.pl',
-       cwd => '/root',
-       user => root, 
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-  }
+#exec { 'set clock': 
+       #command => 'rdate ntp.task.gda.pl',
+       #cwd => '/root',
+       #user => root, 
+	#path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
+  #}
 
 file { '/etc/pkg.conf':
     owner => 'root',
@@ -60,10 +64,10 @@ exec {'create_self_signed_sslcert':
 }
 
 # copy cert and key
-file { "/etc/ssl/private/${::fqdn}.key":
+file { "${key}":
 	source => "/root/${::fqdn}.key",
 }
-file { "/etc/ssl/${::fqdn}.crt":
+file { "${cert}":
 	source => "/root/${::fqdn}.crt",
 }
 
@@ -168,7 +172,27 @@ package { ['owncloud','php-pgsql','php-pdo_pgsql']:
 }
 # tu jest juz utworzony katalog /var/www/owncloud/
 
-
+file { 'httpd.conf':
+	path => '/etc/httpd.conf',
+	ensure => file,
+	mode => '0644',
+	source => 'https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/httpd.conf',
+}->
+file_line { 'replace ${cert}':
+  path => '/etc/httpd.conf',  
+  line => "certificate \"${cert}\"",
+  match   => "certificate.*$",
+}->
+file_line { 'replace ${key}':
+  path => '/etc/httpd.conf',  
+  line => "key \"${key}\"",
+  match   => "key.*$",
+}->
+file_line { 'replace server':
+  path => '/etc/httpd.conf',  
+  line => "server \"${::fqdn}\" {",
+  match   => "server.*$",
+}
 
 file {'/tmp/test':
 	ensure =>present,
