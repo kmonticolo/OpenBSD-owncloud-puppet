@@ -1,15 +1,19 @@
 include stdlib
 # puppet module install puppetlabs-stdlib --version 4.15.0
 #Path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-# puppet module install puppetlabs-postgresql --version 4.8.0
 
 $arch="amd64"
-$mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/packages/${arch}/"
-$pkgmirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/${arch}/"
-$pgpass="/home/vagrant/.pgpass"
+$mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
+$pkgmirror ="${mirror}packages/${arch}/"
+$basemirror = "${mirror}${arch}/"
+$dbpass="abc123"
 $owncloud_db_pass="d5a148be21b8f643105759af71bea852"
+$pgpass="/home/vagrant/.pgpass"
 $key="/etc/ssl/private/${::fqdn}.key"
 $cert="/etc/ssl/${::fqdn}.crt"
+$phpver="5.6.23p0"
+#$phpver="7.0.8p0"
+
 
 #exec { 'set clock': 
        #command => 'rdate ntp.task.gda.pl',
@@ -22,7 +26,7 @@ file { '/etc/pkg.conf':
     owner => 'root',
     group => 'wheel',
     mode => '0644',
-    content => "installpath = ${mirror}\n",
+    content => "installpath = ${pkgmirror}\n",
     #ensure =>absent,
   }
 
@@ -71,15 +75,11 @@ file { "${cert}":
 	source => "/root/${::fqdn}.crt",
 }
 
-#
 # install postgresql server
 package { 'postgresql-server': 
-	source => "${mirror}",
+	source => "${pkgmirror}",
 	ensure => installed,
 }
-#package { 'git':
-	#ensure => latest,
-#}
 
 # create database
 file { '/var/postgresql/data':
@@ -89,7 +89,7 @@ file { '/var/postgresql/data':
 
 # file .pgpass is used to perform sql operations without passing password from keyboard
 file { $pgpass:
-	content => "abc123",
+	content => "${dbpass}",
 	ensure => present,
 	owner => "_postgresql",
 	#owner => "root",
@@ -115,34 +115,34 @@ service { 'postgresql':
 
 exec { 'create PG user':
 	#command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD ${owncloud_db_pass}\"",
-	environment => ["PGPASSWORD=abc123"],
-	command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD \'d5a148be21b8f643105759af71bea852\'\" && touch /tmp/pg_user",
+	environment => ["PGPASSWORD=${dbpass}"],
+	command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD \'${owncloud_db_pass}\'\" && touch /var/postgresql/pg_user",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-	creates => "/tmp/pg_user",
+	creates => "/var/postgresql/pg_user",
 }
 exec { 'create PG database':
-	environment => ["PGPASSWORD=abc123"],
-	command => "psql -U postgres -c \"CREATE DATABASE owncloud TEMPLATE template0 ENCODING \'UNICODE\'\" && touch /tmp/pg_database",
+	environment => ["PGPASSWORD=${dbpass}"],
+	command => "psql -U postgres -c \"CREATE DATABASE owncloud TEMPLATE template0 ENCODING \'UNICODE\'\" && touch /var/postgresql/pg_database",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-	creates => "/tmp/pg_database",
+	creates => "/var/postgresql/pg_database",
 }
 	
 exec { 'alter PG database':
-	environment => ["PGPASSWORD=abc123"],
-	command => "psql -U postgres -c \"ALTER DATABASE owncloud OWNER TO owncloud\" && touch /tmp/pg_alter",
+	environment => ["PGPASSWORD=${dbpass}"],
+	command => "psql -U postgres -c \"ALTER DATABASE owncloud OWNER TO owncloud\" && touch /var/postgresql/pg_alter",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-	creates => "/tmp/pg_alter",
+	creates => "/var/postgresql/pg_alter",
 }
 	
 exec { 'grant PG privileges':
-	environment => ["PGPASSWORD=abc123"],
-	command => "psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE owncloud TO owncloud\" && touch /tmp/pg_grant",
+	environment => ["PGPASSWORD=${dbpass}"],
+	command => "psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE owncloud TO owncloud\" && touch /var/postgresql/pg_grant",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-	creates => "/tmp/pg_grant",
+	creates => "/var/postgresql/pg_grant",
 }
 	
 $dir = "/usr/X11R6/bin/"
@@ -152,8 +152,7 @@ file { 'xbase':
 	path => '/tmp/xbase60.tgz',
 	ensure => file,
 	mode => '0600',
-	#source => "{pkgmirror}/xbase60.tgz",
-	source => 'http://piotrkosoft.net/pub/OpenBSD/6.0/amd64/xbase60.tgz',
+	source => "${basemirror}/xbase60.tgz",
 	#require => Exec["chk_${dir}_exist"],
 }
 
@@ -164,10 +163,12 @@ exec { 'untar xbase if needed':
 }
 
 # install owncloud package
-#package { ['owncloud','php-fpm','php-pgsql','php-pdo_pgsql']: 
-package { ['owncloud','php-pgsql','php-pdo_pgsql']: 
-	#source => "http://ftp.eu.openbsd.org/pub/OpenBSD/${::operatingsystemrelease}/packages/${arch}/",
-	source => "${mirror}",
+package { ['php-zip','php-gd','php-curl','php','php-pgsql','php-pdo_pgsql']: 
+	source => "${pkgmirror}",
+	ensure => "${phpver}",
+}
+package { 'owncloud': 
+	source => "${pkgmirror}",
 	ensure => installed,
 }
 # tu jest juz utworzony katalog /var/www/owncloud/
@@ -175,6 +176,7 @@ package { ['owncloud','php-pgsql','php-pdo_pgsql']:
 file { 'httpd.conf':
 	path => '/etc/httpd.conf',
 	ensure => file,
+	replace => 'no',
 	mode => '0644',
 	source => 'https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/httpd.conf',
 }->
@@ -192,6 +194,57 @@ file_line { 'replace server':
   path => '/etc/httpd.conf',  
   line => "server \"${::fqdn}\" {",
   match   => "server.*$",
+}->
+file_line { 'replace egress':
+  path => '/etc/httpd.conf',  
+  line => "ext_if=\"0.0.0.0\"",
+  match   => "^ext_if.*$",
+  subscribe => File["/etc/httpd.conf"],
+  notify => Service["httpd"],
+}
+
+service { 'httpd':
+	ensure => running,
+	enable => true,
+	hasstatus => true,
+	hasrestart => true,
+	require => File['/etc/httpd.conf'];
+}
+
+# symlinks
+file { '/etc/php-5.6/bz2.ini':
+	source => '/etc/php-5.6.sample/bz2.ini'
+}	
+file { '/etc/php-5.6/curl.ini':
+	source => '/etc/php-5.6.sample/curl.ini'
+}	
+file { '/etc/php-5.6/gd.ini':
+	source => '/etc/php-5.6.sample/gd.ini'
+}	
+file { '/etc/php-5.6/intl.ini':
+	source => '/etc/php-5.6.sample/intl.ini'
+}	
+file { '/etc/php-5.6/mcrypt.ini':
+	source => '/etc/php-5.6.sample/mcrypt.ini'
+}	
+file { '/etc/php-5.6/opcache.ini':
+	source => '/etc/php-5.6.sample/opcache.ini'
+}	
+file { '/etc/php-5.6/pdo_pgsql.ini':
+	source => '/etc/php-5.6.sample/pdo_pgsql.ini'
+}	
+file { '/etc/php-5.6/pgsql.ini':
+	source => '/etc/php-5.6.sample/pgsql.ini'
+}	
+file { '/etc/php-5.6/zip.ini':
+	source => '/etc/php-5.6.sample/zip.ini'
+}	
+
+service { 'php56_fpm':
+	ensure => running,
+	enable => true,
+	hasstatus => true,
+	hasrestart => true,
 }
 
 file {'/tmp/test':
