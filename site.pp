@@ -147,13 +147,18 @@ exec { 'grant PG privileges':
 	
 $dir = "/usr/X11R6/bin/"
 
+exec { 'chk_dir_exist':
+	command => "true",
+	onlyif => 'test -d ${dir}',
+	path => ["/usr/bin/","/bin/"],
+} 
 
 file { 'xbase':
 	path => '/tmp/xbase60.tgz',
 	ensure => file,
 	mode => '0600',
 	source => "${basemirror}/xbase60.tgz",
-	#require => Exec["chk_${dir}_exist"],
+	require => Exec["chk_dir_exist"],
 }
 
 exec { 'untar xbase if needed':
@@ -247,7 +252,4 @@ service { 'php56_fpm':
 	hasrestart => true,
 }
 
-file {'/tmp/test':
-	ensure =>present,
-}
 
