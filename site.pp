@@ -16,6 +16,7 @@ $phpver="5.6.23p0"
 $xbase="xbase60.tgz"
 $tmpxbase="/tmp/${xbase}"
 
+include os
 include chroot
 include cert
 include postgresql
@@ -24,21 +25,23 @@ include owncloud
 include httpd
 include php 
 
-class clock {
-exec { 'set clock': 
+class os {
+  class clock {
+    exec { 'set clock': 
        command => 'rdate ntp.task.gda.pl',
        cwd => '/root',
        user => root, 
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
+       path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
   }
 }
 
-file { '/etc/pkg.conf':
+  file { '/etc/pkg.conf':
     owner => 'root',
     group => 'wheel',
     mode => '0644',
     content => "installpath = ${pkgmirror}\n",
   }
+}
 
 class chroot {
   file { [ '/var/www/usr',
@@ -111,7 +114,7 @@ class postgresql {
 	user => "_postgresql",
 	creates => "/var/postgresql/data/PG_VERSION",
 	path => "/usr/local/bin/",
-	require => Package['postgresql-server'],
+	require => [ Package['postgresql-server'], File["${pgpass}"] ]
   }
 
 
@@ -119,7 +122,7 @@ class postgresql {
 	ensure => running,
 	enable => true,
 	hasstatus => true,
-	require => Package['postgresql-server'],
+	require =>  Package['postgresql-server'], 
   }
 
   exec { 'create PG user':
@@ -183,6 +186,7 @@ class xbase {
 }
 
 class owncloud {
+  require xbase
 # installs owncloud package and others as deps
 package { [ 'php-zip',
 	    'php-gd',
@@ -194,6 +198,7 @@ package { [ 'php-zip',
 	source => "${pkgmirror}",
 	ensure => "${phpver}",
 	require => Package['postgresql-server'],
+	before	=> Package['owncloud'],
   }
   package { 'owncloud': 
 	source => "${pkgmirror}",
@@ -203,6 +208,8 @@ package { [ 'php-zip',
 }
 
 class httpd {
+  require cert
+  require php
   file { 'httpd.conf':
 	path => '/etc/httpd.conf',
 	ensure => file,
@@ -211,30 +218,30 @@ class httpd {
 	source => 'https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/httpd.conf',
   }->
   file_line { 'replace ${cert}':
-  path => '/etc/httpd.conf',  
-  line => "certificate \"${cert}\"",
-  match   => "certificate.*$",
-  require => File['/etc/httpd.conf'],
+  	path => '/etc/httpd.conf',  
+  	line => "certificate \"${cert}\"",
+  	match   => "certificate.*$",
+  	require => File['/etc/httpd.conf'],
   }->
-  file_line { 'replace ${key}':
-  path => '/etc/httpd.conf',  
-  line => "key \"${key}\"",
-  match   => "key.*$",
-  require => File['/etc/httpd.conf'],
+   file_line { 'replace ${key}':
+  	path => '/etc/httpd.conf',  
+  	line => "key \"${key}\"",
+  	match   => "key.*$",
+  	require => File['/etc/httpd.conf'],
   }->
   file_line { 'replace server':
-  path => '/etc/httpd.conf',  
-  line => "server \"${::fqdn}\" {",
-  match   => "server.*$",
-  require => File['/etc/httpd.conf'],
+  	path => '/etc/httpd.conf',  
+  	line => "server \"${::fqdn}\" {",
+  	match   => "server.*$",
+  	require => File['/etc/httpd.conf'],
   }->
   file_line { 'replace egress':
-  path => '/etc/httpd.conf',  
-  line => "ext_if=\"0.0.0.0\"",
-  match   => "^ext_if.*$",
-  subscribe => File["/etc/httpd.conf"],
-  notify => Service["httpd"],
-  require => File['/etc/httpd.conf'],
+  	path => '/etc/httpd.conf',  
+  	line => "ext_if=\"0.0.0.0\"",
+  	match   => "^ext_if.*$",
+  	subscribe => File["/etc/httpd.conf"],
+  	notify => Service["httpd"],
+  	require => File['/etc/httpd.conf'],
   }
 
   service { 'httpd':
@@ -242,62 +249,38 @@ class httpd {
 	enable => true,
 	hasstatus => true,
 	hasrestart => true,
-	require => File['/etc/httpd.conf'],
+	subscribe => File['/etc/httpd.conf'],
   }
 }
 
 class php {
-  # symlinks
-#  file { '/etc/php-5.6/bz2.ini':
-#	source => '/etc/php-5.6.sample/bz2.ini',
-#	#require => Package['php-bz2'],
-#  }	
-#  file { '/etc/php-5.6/curl.ini':
-#	source => '/etc/php-5.6.sample/curl.ini',
-#	require => Package['php-curl'],
-#  }	
-#  file { '/etc/php-5.6/gd.ini':
-#	source => '/etc/php-5.6.sample/gd.ini',
-#	require => Package['php-gd'],
-#  }	
-#  file { '/etc/php-5.6/intl.ini':
-#	source => '/etc/php-5.6.sample/intl.ini',
-#	#require => Package['php-intl'],
-#  }	
-#  file { '/etc/php-5.6/mcrypt.ini':
-#	source => '/etc/php-5.6.sample/mcrypt.ini',
-#	#require => Package['php-mcrypt'],
-#  }	
-#  file { '/etc/php-5.6/pdo_pgsql.ini':
-#	source => '/etc/php-5.6.sample/pdo_pgsql.ini',
-#	require => Package['php-pdo_pgsql'],
-#  }	
-#  file { '/etc/php-5.6/pgsql.ini':
-#	source => '/etc/php-5.6.sample/pgsql.ini',
-#	require => Package['php-pgsql'],
-#  }	
-#  file { '/etc/php-5.6/zip.ini':
-#	source => '/etc/php-5.6.sample/zip.ini',
-#	require => Package['php-zip'],
-#  }	
-
-$symlinks= ['bz2', 'curl', 'gd', 'intl', 'mcrypt', 'pdo_pgsql', 'pgsql', 'zip']
+  	require owncloud
+$symlinks= [	'bz2', 
+		'curl', 
+		'gd', 
+		'intl', 
+		'mcrypt', 
+		'pdo_pgsql', 
+		'pgsql', 
+		'zip'
+  ]
 
 # function call with lambda:
 $symlinks.each |String $symlinks| {
-  file {"/etc/php-5.6/${symlinks}.ini":
-    ensure => link,
-    target => "/etc/php-5.6.sample/${symlinks}.ini",
+  	file {"/etc/php-5.6/${symlinks}.ini":
+    	ensure => link,
+    	target => "/etc/php-5.6.sample/${symlinks}.ini",
   }
 }
 
+  file { [ '/etc/php-fpm.conf', '/etc/php-5.6.ini' ]:
+	notify => Service['php56_fpm'],
+  }
   service { 'php56_fpm':
 	ensure => running,
 	enable => true,
 	hasstatus => true,
 	hasrestart => true,
-	#require => File['/etc/php-fpm.conf'],
-	require => File['/etc/httpd.conf'],
   }
 }
 
