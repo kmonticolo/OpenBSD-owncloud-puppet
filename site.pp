@@ -153,12 +153,14 @@ exec { 'chk_dir_exist':
 	path => ["/usr/bin/","/bin/"],
 } 
 
+if ! Exec["chk_dir_exist"] {
 file { 'xbase':
 	path => '/tmp/xbase60.tgz',
 	ensure => file,
 	mode => '0600',
 	source => "${basemirror}/xbase60.tgz",
-	require => Exec["chk_dir_exist"],
+	#require => Exec["chk_dir_exist"],
+}
 }
 
 exec { 'untar xbase if needed':
