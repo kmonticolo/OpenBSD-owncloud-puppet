@@ -19,7 +19,7 @@ chmod +x snap
 ./snap -s -M piotrkosoft.net -x
 sysmerge
 ```
-<reboot>
+reboot
 ```
 sudo su
 export PKG_PATH=http://piotrkosoft.net/pub/OpenBSD/snapshots/packages/amd64/
