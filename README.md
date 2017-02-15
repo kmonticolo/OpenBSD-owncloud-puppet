@@ -18,6 +18,11 @@ curl -O https://raw.githubusercontent.com/qbit/snap/master/snap
 chmod +x snap
 ./snap -s -M piotrkosoft.net -x
 sysmerge
+```
+<reboot>
+```
+sudo su
+export PKG_PATH=http://piotrkosoft.net/pub/OpenBSD/snapshots/packages/amd64/
 pkg_add -u
 puppet apply sitesnap.pp
 ```
