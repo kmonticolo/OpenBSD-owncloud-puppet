@@ -7,11 +7,13 @@ sudo puppet module install puppetlabs-stdlib --version 4.15.0
 ```
 Then install owncloud using:
 ```
-puppet apply site.pp
+sudo puppet apply site.pp
 ```
+After installation restart server and go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
 
 For snapshot users:
 ```
+sudo su
 curl -O https://raw.githubusercontent.com/qbit/snap/master/snap
 chmod +x snap
 ./snap -s -M piotrkosoft.net -x
@@ -19,4 +21,4 @@ sysmerge
 pkg_add -u
 puppet apply sitesnap.pp
 ```
-After installation restart server and go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
+
