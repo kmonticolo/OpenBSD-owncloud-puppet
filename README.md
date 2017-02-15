@@ -24,6 +24,6 @@ reboot
 sudo su
 export PKG_PATH=http://piotrkosoft.net/pub/OpenBSD/snapshots/packages/amd64/
 pkg_add -u
+puppet module install puppetlabs-stdlib --version 4.15.0
 puppet apply sitesnap.pp
 ```
-
