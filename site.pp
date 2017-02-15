@@ -14,244 +14,279 @@ $cert="/etc/ssl/${::fqdn}.crt"
 $phpver="5.6.23p0"
 #$phpver="7.0.8p0"
 
+include chroot
+include cert
+include postgresql
+include xbase
+include owncloud
+include httpd
+include php 
 
-#exec { 'set clock': 
-       #command => 'rdate ntp.task.gda.pl',
-       #cwd => '/root',
-       #user => root, 
-	#path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-  #}
+class clock {
+exec { 'set clock': 
+       command => 'rdate ntp.task.gda.pl',
+       cwd => '/root',
+       user => root, 
+	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
+  }
+}
 
 file { '/etc/pkg.conf':
     owner => 'root',
     group => 'wheel',
     mode => '0644',
     content => "installpath = ${pkgmirror}\n",
-    #ensure =>absent,
   }
 
-file { [ '/var/www/usr',
+class chroot {
+  file { [ '/var/www/usr',
 	 '/var/www/etc',
 	 '/var/www/usr/share',
          '/var/www/usr/share/locale',
          '/var/www/usr/share/locale/UTF-8/', ]:
 	ensure => directory,
 	recurse => true,
+  }
+
+  file { '/var/www/usr/share/locale/UTF-8/LC_CTYPE':
+	source => '/usr/share/locale/UTF-8/LC_CTYPE',
+	require => File['/var/www/usr/share/locale/UTF-8/'],
+  }	
+
+  file { '/var/www/etc/hosts':
+	source => '/etc/hosts'
+  }	
+
+  file { '/var/www/etc/resolv.conf':
+	source => '/etc/resolv.conf'
+  }	
 }
 
-file { '/var/www/usr/share/locale/UTF-8/LC_CTYPE':
-	source => '/usr/share/locale/UTF-8/LC_CTYPE',
-}	
-
-file { '/var/www/etc/hosts':
-	source => '/etc/hosts'
-}	
-
-file { '/var/www/etc/resolv.conf':
-	source => '/etc/resolv.conf'
-}	
-
-# generate self-signed certificate
-exec { 'generate self-signed certificate': 
-       command => '/usr/bin/openssl genrsa -out server.key',
-       cwd => '/root',
-       user => root, 
+class cert {
+  # generate PEM RSA private key
+  exec { 'generate self-signed certificate': 
+	command => 'openssl genrsa -out server.key',
+	cwd => '/root',
+	user => root, 
+	path => ["/usr/bin", "/usr/sbin"],
 	creates => "/root/server.key",
   }
 
-# generate certificate
-exec {'create_self_signed_sslcert':
-	command => "openssl req -newkey rsa:2048 -nodes -keyout ${::fqdn}.key -x509 -days 365 -out ${::fqdn}.crt -subj  '/CN=${::fqdn}'",
+  # generate self-signed certificate
+  exec {'create_self_signed_sslcert':
+	command => "openssl req -newkey rsa:2048 -nodes -keyout ${key} -x509 -days 365 -out ${cert} -subj  '/CN=${::fqdn}'",
         cwd => '/root',
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
-	creates => [ "/root/${::fqdn}.key", "/root/${::fqdn}.crt" ],
+	creates => [ "${key}", "${cert}" ],
+  }
 }
 
-# copy cert and key
-file { "${key}":
-	source => "/root/${::fqdn}.key",
-}
-file { "${cert}":
-	source => "/root/${::fqdn}.crt",
-}
-
-# install postgresql server
-package { 'postgresql-server': 
+class postgresql {
+  # install postgresql server
+  package { 'postgresql-server': 
 	source => "${pkgmirror}",
 	ensure => installed,
-}
+  }
 
-# create database
-file { '/var/postgresql/data':
+  # create database directory
+  file { '/var/postgresql/data':
 	ensure => directory,
 	owner => _postgresql,
-}
+	require => Package['postgresql-server'],
+  }
 
-# file .pgpass is used to perform sql operations without passing password from keyboard
-file { $pgpass:
+  # file .pgpass is used to perform sql operations without passing password from keyboard
+  file { $pgpass:
 	content => "${dbpass}",
 	ensure => present,
 	owner => "_postgresql",
-	#owner => "root",
 	mode => '0600',
-}
+  }
 
-# exec initdb
-exec {'exec initdb':
-	#command => "initdb -D /var/postgresql/data -U postgres -A md5 -W ",
+  # exec initdb
+  exec {'exec initdb':
 	command => "initdb -D /var/postgresql/data -U postgres -A md5 --pwfile=${pgpass}",
 	user => "_postgresql",
 	creates => "/var/postgresql/data/PG_VERSION",
 	path => "/usr/local/bin/",
-}
+	require => Package['postgresql-server'],
+  }
 
 
-service { 'postgresql':
+  service { 'postgresql':
 	ensure => running,
 	enable => true,
 	hasstatus => true,
 	require => Package['postgresql-server'];
-}
+  }
 
-exec { 'create PG user':
-	#command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD ${owncloud_db_pass}\"",
+  exec { 'create PG user':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD \'${owncloud_db_pass}\'\" && touch /var/postgresql/pg_user",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_user",
-}
-exec { 'create PG database':
+	require => Package['postgresql-server'],
+  }
+  exec { 'create PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE DATABASE owncloud TEMPLATE template0 ENCODING \'UNICODE\'\" && touch /var/postgresql/pg_database",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_database",
-}
+	require => Package['postgresql-server'],
+  }
 	
-exec { 'alter PG database':
+  exec { 'alter PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"ALTER DATABASE owncloud OWNER TO owncloud\" && touch /var/postgresql/pg_alter",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_alter",
-}
+	require => Package['postgresql-server'],
+  }
 	
-exec { 'grant PG privileges':
+  exec { 'grant PG privileges':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE owncloud TO owncloud\" && touch /var/postgresql/pg_grant",
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_grant",
+	require => Package['postgresql-server'],
+  }
 }
 	
-$dir = "/usr/X11R6/bin/"
+class xbase {
+  $dir = "/usr/X11R6/bin/"
 
-exec { 'chk_dir_exist':
+  exec { 'chk_dir_exist':
 	command => "true",
 	onlyif => 'test -d ${dir}',
 	path => ["/usr/bin/","/bin/"],
-} 
+  } 
 
-if ! Exec["chk_dir_exist"] {
-file { 'xbase':
+  file { 'xbase':
 	path => '/tmp/xbase60.tgz',
 	ensure => file,
 	mode => '0600',
 	source => "${basemirror}/xbase60.tgz",
 	#require => Exec["chk_dir_exist"],
-}
-}
+  }
 
-exec { 'untar xbase if needed':
+  exec { 'untar xbase if needed':
 	command => "tar zxpfh /tmp/xbase60.tgz -C /",
 	path => "/bin/",
 	creates => "/usr/X11R6/bin/",
+  }
 }
 
-# install owncloud package
-package { ['php-zip','php-gd','php-curl','php','php-pgsql','php-pdo_pgsql']: 
+class owncloud {
+# installs owncloud package
+package { [ 'php-zip',
+	    'php-gd',
+	    'php-curl',
+	    'php',
+	    'php-pgsql',
+	    'php-pdo_pgsql'
+  ]: 
 	source => "${pkgmirror}",
 	ensure => "${phpver}",
-}
-package { 'owncloud': 
+	require => Package['postgresql-server'],
+  }
+  package { 'owncloud': 
 	source => "${pkgmirror}",
 	ensure => installed,
+	require => Package['postgresql-server','php-pgsql','php-pdo_pgsql'],
+  }
 }
-# tu jest juz utworzony katalog /var/www/owncloud/
 
-file { 'httpd.conf':
+class httpd {
+  file { 'httpd.conf':
 	path => '/etc/httpd.conf',
 	ensure => file,
 	replace => 'no',
 	mode => '0644',
 	source => 'https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/httpd.conf',
-}->
-file_line { 'replace ${cert}':
+  }->
+  file_line { 'replace ${cert}':
   path => '/etc/httpd.conf',  
   line => "certificate \"${cert}\"",
   match   => "certificate.*$",
-}->
-file_line { 'replace ${key}':
+  require => File['/etc/httpd.conf'],
+  }->
+  file_line { 'replace ${key}':
   path => '/etc/httpd.conf',  
   line => "key \"${key}\"",
   match   => "key.*$",
-}->
-file_line { 'replace server':
+  require => File['/etc/httpd.conf'],
+  }->
+  file_line { 'replace server':
   path => '/etc/httpd.conf',  
   line => "server \"${::fqdn}\" {",
   match   => "server.*$",
-}->
-file_line { 'replace egress':
+  require => File['/etc/httpd.conf'],
+  }->
+  file_line { 'replace egress':
   path => '/etc/httpd.conf',  
   line => "ext_if=\"0.0.0.0\"",
   match   => "^ext_if.*$",
   subscribe => File["/etc/httpd.conf"],
   notify => Service["httpd"],
-}
+  require => File['/etc/httpd.conf'],
+  }
 
-service { 'httpd':
+  service { 'httpd':
 	ensure => running,
 	enable => true,
 	hasstatus => true,
 	hasrestart => true,
-	require => File['/etc/httpd.conf'];
+	require => File['/etc/httpd.conf'],
+  }
 }
 
-# symlinks
-file { '/etc/php-5.6/bz2.ini':
-	source => '/etc/php-5.6.sample/bz2.ini'
-}	
-file { '/etc/php-5.6/curl.ini':
-	source => '/etc/php-5.6.sample/curl.ini'
-}	
-file { '/etc/php-5.6/gd.ini':
-	source => '/etc/php-5.6.sample/gd.ini'
-}	
-file { '/etc/php-5.6/intl.ini':
-	source => '/etc/php-5.6.sample/intl.ini'
-}	
-file { '/etc/php-5.6/mcrypt.ini':
-	source => '/etc/php-5.6.sample/mcrypt.ini'
-}	
-file { '/etc/php-5.6/opcache.ini':
-	source => '/etc/php-5.6.sample/opcache.ini'
-}	
-file { '/etc/php-5.6/pdo_pgsql.ini':
-	source => '/etc/php-5.6.sample/pdo_pgsql.ini'
-}	
-file { '/etc/php-5.6/pgsql.ini':
-	source => '/etc/php-5.6.sample/pgsql.ini'
-}	
-file { '/etc/php-5.6/zip.ini':
-	source => '/etc/php-5.6.sample/zip.ini'
-}	
+class php {
+  # symlinks
+  file { '/etc/php-5.6/bz2.ini':
+	source => '/etc/php-5.6.sample/bz2.ini',
+	#require => Package['php-bz2'],
+  }	
+  file { '/etc/php-5.6/curl.ini':
+	source => '/etc/php-5.6.sample/curl.ini',
+	require => Package['php-curl'],
+  }	
+  file { '/etc/php-5.6/gd.ini':
+	source => '/etc/php-5.6.sample/gd.ini',
+	require => Package['php-gd'],
+  }	
+  file { '/etc/php-5.6/intl.ini':
+	source => '/etc/php-5.6.sample/intl.ini',
+	#require => Package['php-intl'],
+  }	
+  file { '/etc/php-5.6/mcrypt.ini':
+	source => '/etc/php-5.6.sample/mcrypt.ini',
+	#require => Package['php-mcrypt'],
+  }	
+  file { '/etc/php-5.6/pdo_pgsql.ini':
+	source => '/etc/php-5.6.sample/pdo_pgsql.ini',
+	require => Package['php-pdo_pgsql'],
+  }	
+  file { '/etc/php-5.6/pgsql.ini':
+	source => '/etc/php-5.6.sample/pgsql.ini',
+	require => Package['php-pgsql'],
+  }	
+  file { '/etc/php-5.6/zip.ini':
+	source => '/etc/php-5.6.sample/zip.ini',
+	require => Package['php-zip'],
+  }	
 
-service { 'php56_fpm':
+  service { 'php56_fpm':
 	ensure => running,
 	enable => true,
 	hasstatus => true,
 	hasrestart => true,
+	#require => File['/etc/php-fpm.conf'],
+	require => File['/etc/httpd.conf'],
+  }
 }
 
 
