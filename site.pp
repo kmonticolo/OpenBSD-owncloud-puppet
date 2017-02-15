@@ -13,6 +13,8 @@ $key="/etc/ssl/private/${::fqdn}.key"
 $cert="/etc/ssl/${::fqdn}.crt"
 $phpver="5.6.23p0"
 #$phpver="7.0.8p0"
+$xbase="xbase60.tgz"
+$tmpxbase="/tmp/${xbase}"
 
 include chroot
 include cert
@@ -117,7 +119,7 @@ class postgresql {
 	ensure => running,
 	enable => true,
 	hasstatus => true,
-	require => Package['postgresql-server'];
+	require => Package['postgresql-server'],
   }
 
   exec { 'create PG user':
@@ -169,19 +171,19 @@ class xbase {
 	path => '/tmp/xbase60.tgz',
 	ensure => file,
 	mode => '0600',
-	source => "${basemirror}/xbase60.tgz",
+	source => "${basemirror}/${xbase}",
 	#require => Exec["chk_dir_exist"],
   }
 
-  exec { 'untar xbase if needed':
-	command => "tar zxpfh /tmp/xbase60.tgz -C /",
+  exec { 'untar ${xbase} if needed':
+	command => "tar zxpfh ${tmpxbase} -C /",
 	path => "/bin/",
-	creates => "/usr/X11R6/bin/",
+	creates => "${dir}",
   }
 }
 
 class owncloud {
-# installs owncloud package
+# installs owncloud package and others as deps
 package { [ 'php-zip',
 	    'php-gd',
 	    'php-curl',
@@ -246,38 +248,48 @@ class httpd {
 
 class php {
   # symlinks
-  file { '/etc/php-5.6/bz2.ini':
-	source => '/etc/php-5.6.sample/bz2.ini',
-	#require => Package['php-bz2'],
-  }	
-  file { '/etc/php-5.6/curl.ini':
-	source => '/etc/php-5.6.sample/curl.ini',
-	require => Package['php-curl'],
-  }	
-  file { '/etc/php-5.6/gd.ini':
-	source => '/etc/php-5.6.sample/gd.ini',
-	require => Package['php-gd'],
-  }	
-  file { '/etc/php-5.6/intl.ini':
-	source => '/etc/php-5.6.sample/intl.ini',
-	#require => Package['php-intl'],
-  }	
-  file { '/etc/php-5.6/mcrypt.ini':
-	source => '/etc/php-5.6.sample/mcrypt.ini',
-	#require => Package['php-mcrypt'],
-  }	
-  file { '/etc/php-5.6/pdo_pgsql.ini':
-	source => '/etc/php-5.6.sample/pdo_pgsql.ini',
-	require => Package['php-pdo_pgsql'],
-  }	
-  file { '/etc/php-5.6/pgsql.ini':
-	source => '/etc/php-5.6.sample/pgsql.ini',
-	require => Package['php-pgsql'],
-  }	
-  file { '/etc/php-5.6/zip.ini':
-	source => '/etc/php-5.6.sample/zip.ini',
-	require => Package['php-zip'],
-  }	
+#  file { '/etc/php-5.6/bz2.ini':
+#	source => '/etc/php-5.6.sample/bz2.ini',
+#	#require => Package['php-bz2'],
+#  }	
+#  file { '/etc/php-5.6/curl.ini':
+#	source => '/etc/php-5.6.sample/curl.ini',
+#	require => Package['php-curl'],
+#  }	
+#  file { '/etc/php-5.6/gd.ini':
+#	source => '/etc/php-5.6.sample/gd.ini',
+#	require => Package['php-gd'],
+#  }	
+#  file { '/etc/php-5.6/intl.ini':
+#	source => '/etc/php-5.6.sample/intl.ini',
+#	#require => Package['php-intl'],
+#  }	
+#  file { '/etc/php-5.6/mcrypt.ini':
+#	source => '/etc/php-5.6.sample/mcrypt.ini',
+#	#require => Package['php-mcrypt'],
+#  }	
+#  file { '/etc/php-5.6/pdo_pgsql.ini':
+#	source => '/etc/php-5.6.sample/pdo_pgsql.ini',
+#	require => Package['php-pdo_pgsql'],
+#  }	
+#  file { '/etc/php-5.6/pgsql.ini':
+#	source => '/etc/php-5.6.sample/pgsql.ini',
+#	require => Package['php-pgsql'],
+#  }	
+#  file { '/etc/php-5.6/zip.ini':
+#	source => '/etc/php-5.6.sample/zip.ini',
+#	require => Package['php-zip'],
+#  }	
+
+$symlinks= ['bz2', 'curl', 'gd', 'intl', 'mcrypt', 'pdo_pgsql', 'pgsql', 'zip']
+
+# function call with lambda:
+$symlinks.each |String $symlinks| {
+  file {"/etc/php-5.6/${symlinks}.ini":
+    ensure => link,
+    target => "/etc/php-5.6.sample/${symlinks}.ini",
+  }
+}
 
   service { 'php56_fpm':
 	ensure => running,
