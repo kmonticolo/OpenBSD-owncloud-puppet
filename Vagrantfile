@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
    ftp -o - https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/site.pp >site.pp
    which puppet 2>/dev/null || pkg_add http://piotrkosoft.net/pub/OpenBSD/6.0/packages/amd64/puppet-4.5.2p0.tgz
-   for i in /usr/local/bin/*22; do ln -s $i `echo $i | sed 's/..$//'`;done
+   for i in /usr/local/bin/*22; do j=`echo $i | sed 's/..$//'`; test -L $j || ln -s $i $j;done
    puppet module list|grep -q stdlib || puppet module install puppetlabs-stdlib --version 4.15.0
    puppet apply /home/vagrant/site.pp
    SHELL
