@@ -24,6 +24,7 @@ include xbase
 include owncloud
 include httpd
 include php 
+include notice 
 
 class os {
   class clock {
@@ -189,31 +190,9 @@ class xbase {
 
 }
 
-class owncloud {
-  require xbase
-# installs owncloud package and others as deps
-package { [ 'php-zip',
-	    'php-gd',
-	    'php-curl',
-	    'php',
-	    'php-pgsql',
-	    'php-pdo_pgsql'
-  ]: 
-	source => "${pkgmirror}",
-	ensure => "${phpver}",
-	require => Package['postgresql-server'],
-	before	=> Package['owncloud'],
-  }
-  package { 'owncloud': 
-	source => "${pkgmirror}",
-	ensure => installed,
-	require => Package['postgresql-server','php-pgsql','php-pdo_pgsql'],
-  }
-}
 
 class httpd {
   require cert
-  require php
   file { 'httpd.conf':
 	path => '/etc/httpd.conf',
 	ensure => file,
@@ -258,7 +237,19 @@ class httpd {
 }
 
 class php {
-  	require owncloud
+  	require xbase
+package { [ 'php-zip',
+	    'php-gd',
+	    'php-curl',
+	    'php',
+	    'php-pgsql',
+	    'php-pdo_pgsql'
+  ]: 
+	source => "${pkgmirror}",
+	ensure => "${phpver}",
+	require => Package['postgresql-server'],
+	before	=> Package['owncloud'],
+  }
 $symlinks= [	'bz2', 
 		'curl', 
 		'gd', 
@@ -288,6 +279,18 @@ $symlinks.each |String $symlinks| {
   }
 }
 
+class owncloud {
+  require php
+# installs owncloud package and others as deps
+  package { 'owncloud': 
+	source => "${pkgmirror}",
+	ensure => installed,
+	require => Package['postgresql-server','php-pgsql','php-pdo_pgsql'],
+  }
+}
 
+class notice {
+require owncloud
 notice (" owncloud database password:  ${owncloud_db_pass} ")
 notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
+}
