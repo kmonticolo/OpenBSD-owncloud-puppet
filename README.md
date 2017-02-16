@@ -9,7 +9,8 @@ Then install owncloud using:
 ```
 sudo puppet apply site.pp
 ```
-After installation restart server and go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
+After installation go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
+Default user, database name will be owncloud.
 
 For snapshot users:
 ```
