@@ -6,15 +6,15 @@ $arch="amd64"
 $mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
-$dbpass="abc123"
-$owncloud_db_pass="d5a148be21b8f643105759af71bea852"
-$pgpass="/home/vagrant/.pgpass"
-$key="/etc/ssl/private/${::fqdn}.key"
-$cert="/etc/ssl/${::fqdn}.crt"
-$phpver="5.6.23p0"
-#$phpver="7.0.8p0"
-$xbase="xbase60.tgz"
-$tmpxbase="/tmp/${xbase}"
+$dbpass = "abc123"
+$owncloud_db_pass = "d5a148be21b8f643105759af71bea852"
+$pgpass = "/home/vagrant/.pgpass"
+$key = "/etc/ssl/private/${::fqdn}.key"
+$cert = "/etc/ssl/${::fqdn}.crt"
+$phpver = "5.6.23p0"
+#$phpver = "7.0.8p0"
+$xbase = "xbase60.tgz"
+$tmpxbase = "/tmp/${xbase}"
 
 include os
 include chroot
@@ -285,3 +285,5 @@ $symlinks.each |String $symlinks| {
 }
 
 
+notice (" owncloud database password:  ${owncloud_db_pass} ")
+notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
