@@ -179,10 +179,14 @@ class xbase {
   }
 
   exec { 'untar ${xbase} if needed':
-	command => "tar zxpfh ${tmpxbase} -C /",
-	path => "/bin/",
+	command => "/bin/tar zxpfh ${tmpxbase} -C /",
 	creates => "${dir}",
   }
+  exec { 'ldconfig':
+	command => "/sbin/ldconfig -m /usr/X11R6/lib",
+	notify => Service["php56_fpm"];
+  }
+
 }
 
 class owncloud {
