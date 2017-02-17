@@ -215,7 +215,7 @@ class httpd {
   file_line { 'replace server':
   	path => '/etc/httpd.conf',  
   	line => "server \"${::fqdn}\" {",
-  	match   => "server.*$",
+  	match   => "^server.*$",
   	require => File['/etc/httpd.conf'],
   }->
   file_line { 'replace egress':
