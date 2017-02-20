@@ -2,7 +2,7 @@ include stdlib
 # puppet module install puppetlabs-stdlib --version 4.15.0
 #Path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 
-$arch="amd64"
+$arch=$::facts['processors']['isa']
 $mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
@@ -11,16 +11,20 @@ $owncloud_db_pass = "d5a148be21b8f643105759af71bea852"
 $pgpass = "/home/vagrant/.pgpass"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
-$phpver = "5.6.23p0"
-#$phpver = "7.0.8p0"
-$xbase = "xbase60.tgz"
+[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
+$phpservice = "php${phpv}_fpm"
+$osmajor = $::facts['os']['release']['major']
+$osminor = $::facts['os']['release']['minor']
+$xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
+$httpdconf = "/etc/httpd.conf"
 
 include os
 include chroot
 include cert
 include postgresql
-include xbase
+#include xbase
 include owncloud
 include httpd
 include php 
@@ -132,7 +136,7 @@ class postgresql {
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_user",
-	require => Package['postgresql-server'],
+	require => Service['postgresql'],
   }
   exec { 'create PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
@@ -140,7 +144,7 @@ class postgresql {
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_database",
-	require => Package['postgresql-server'],
+	require => Service['postgresql'],
   }
 	
   exec { 'alter PG database':
@@ -149,7 +153,7 @@ class postgresql {
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_alter",
-	require => Package['postgresql-server'],
+	require => Service['postgresql'],
   }
 	
   exec { 'grant PG privileges':
@@ -158,7 +162,7 @@ class postgresql {
 	user => "_postgresql",
 	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_grant",
-	require => Package['postgresql-server'],
+	require => Service['postgresql'],
   }
 }
 	
@@ -185,7 +189,6 @@ class xbase {
   }
   exec { 'ldconfig':
 	command => "/sbin/ldconfig -m /usr/X11R6/lib",
-	notify => Service["php56_fpm"];
   }
 
 }
@@ -193,38 +196,37 @@ class xbase {
 
 class httpd {
   require cert
-  file { 'httpd.conf':
-	path => '/etc/httpd.conf',
+  file { "${httpdconf}":
+	path => "${httpdconf}",
 	ensure => file,
 	replace => 'no',
 	mode => '0644',
 	source => 'https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/httpd.conf',
   }->
-  file_line { 'replace ${cert}':
-  	path => '/etc/httpd.conf',  
+  file_line { "replace ${cert}":
+	path => "${httpdconf}",
   	line => "certificate \"${cert}\"",
   	match   => "certificate.*$",
-  	require => File['/etc/httpd.conf'],
+  	require => File["${httpdconf}"],
   }->
-   file_line { 'replace ${key}':
-  	path => '/etc/httpd.conf',  
+   file_line { "replace ${key}":
+	path => "${httpdconf}",
   	line => "key \"${key}\"",
   	match   => "key.*$",
-  	require => File['/etc/httpd.conf'],
+  	require => File["${httpdconf}"],
   }->
-  file_line { 'replace server':
-  	path => '/etc/httpd.conf',  
+  file_line { 'replace fqdn':
+	path => "${httpdconf}",
   	line => "server \"${::fqdn}\" {",
   	match   => "^server.*$",
-  	require => File['/etc/httpd.conf'],
+  	require => File["${httpdconf}"],
   }->
   file_line { 'replace egress':
-  	path => '/etc/httpd.conf',  
+	path => "${httpdconf}",
   	line => "ext_if=\"0.0.0.0\"",
   	match   => "^ext_if.*$",
-  	subscribe => File["/etc/httpd.conf"],
   	notify => Service["httpd"],
-  	require => File['/etc/httpd.conf'],
+  	require => File["${httpdconf}"],
   }
 
   service { 'httpd':
@@ -232,14 +234,14 @@ class httpd {
 	enable => true,
 	hasstatus => true,
 	hasrestart => true,
-	subscribe => File['/etc/httpd.conf'],
+	subscribe => File["${httpdconf}"],
   }
 }
 
 class php {
   	require xbase
-package { [ 'php-zip',
-	    'php-gd',
+  package { [ 'php-zip',
+      	    'php-gd',
 	    'php-curl',
 	    'php',
 	    'php-pgsql',
@@ -262,20 +264,21 @@ $symlinks= [	'bz2',
 
 # function call with lambda:
 $symlinks.each |String $symlinks| {
-  	file {"/etc/php-5.6/${symlinks}.ini":
+  	file {"${phpvetc}/${symlinks}.ini":
     	ensure => link,
-    	target => "/etc/php-5.6.sample/${symlinks}.ini",
+    	target => "${phpvetc}.sample/${symlinks}.ini",
   }
 }
 
-  file { [ '/etc/php-fpm.conf', '/etc/php-5.6.ini' ]:
-	notify => Service['php56_fpm'],
+  file { [ '/etc/php-fpm.conf', "${phpvetc}.ini", "${phpvetc}/${symlinks}.ini" ]:
+	subscribe => Service["${phpservice}"],
   }
-  service { 'php56_fpm':
+  service { "${phpservice}":
 	ensure => running,
 	enable => true,
 	hasstatus => true,
 	hasrestart => true,
+	require => [ Service['postgresql'], Package['php-pgsql'], Package['php-pdo_pgsql'] ]
   }
 }
 
@@ -285,12 +288,12 @@ class owncloud {
   package { 'owncloud': 
 	source => "${pkgmirror}",
 	ensure => installed,
-	require => Package['postgresql-server','php-pgsql','php-pdo_pgsql'],
+	require => [ Service["${phpservice}"], Service["httpd"] ]
   }
 }
 
 class notice {
-require owncloud
+#require owncloud
 notice (" owncloud database password:  ${owncloud_db_pass} ")
 notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
 }
