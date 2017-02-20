@@ -1,5 +1,5 @@
 # OpenBSD-owncloud-puppet
-Puppet manifest to unattended installation owncloud on OpenBSD
+Puppet boilerplate manifest to unattended installation owncloud on OpenBSD's httpd with chroot.
 
 First, you need to install module as root: 
 ```
