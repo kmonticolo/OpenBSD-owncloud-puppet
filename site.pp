@@ -11,6 +11,7 @@ $adminlogin = "admin"
 $adminpass = "admin"
 $owncloud_db_pass = "d5a148be21b8f643105759af71bea852"
 $pgpass = "/tmp/.pgpass"
+$pguser = "_postgresql"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 
@@ -109,7 +110,7 @@ class postgresql {
   # create database directory
   file { '/var/postgresql/data':
 	ensure => directory,
-	owner => _postgresql,
+	owner => "${pguser}",
 	require => Package['postgresql-server'],
   }
 
@@ -117,14 +118,14 @@ class postgresql {
   file { $pgpass:
 	content => "${dbpass}",
 	ensure => present,
-	owner => "_postgresql",
+	owner => "${pguser}",
 	mode => '0600',
   }
 
   # exec initdb
   exec {'exec initdb':
 	command => "initdb -D /var/postgresql/data -U postgres -A md5 --pwfile=${pgpass}",
-	user => "_postgresql",
+	user => "${pguser}",
 	creates => "/var/postgresql/data/PG_VERSION",
 	require => [ Package['postgresql-server'], File["${pgpass}"] ]
   }
@@ -140,14 +141,14 @@ class postgresql {
   exec { 'create PG user':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD \'${owncloud_db_pass}\'\" && touch /var/postgresql/pg_user",
-	user => "_postgresql",
+	user => "${pguser}",
 	creates => "/var/postgresql/pg_user",
 	require => Service['postgresql'],
   }
   exec { 'create PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE DATABASE owncloud TEMPLATE template0 ENCODING \'UNICODE\'\" && touch /var/postgresql/pg_database",
-	user => "_postgresql",
+	user => "${pguser}",
 	creates => "/var/postgresql/pg_database",
 	require => Service['postgresql'],
   }
@@ -155,7 +156,7 @@ class postgresql {
   exec { 'alter PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"ALTER DATABASE owncloud OWNER TO owncloud\" && touch /var/postgresql/pg_alter",
-	user => "_postgresql",
+	user => "${pguser}",
 	creates => "/var/postgresql/pg_alter",
 	require => Service['postgresql'],
   }
@@ -163,7 +164,7 @@ class postgresql {
   exec { 'grant PG privileges':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE owncloud TO owncloud\" && touch /var/postgresql/pg_grant",
-	user => "_postgresql",
+	user => "${pguser}",
 	creates => "/var/postgresql/pg_grant",
 	require => Service['postgresql'],
   }
@@ -276,7 +277,7 @@ $symlinks.each |String $symlinks| {
 	subscribe => Service["${phpservice}"],
   }
 
-  # disable other versions of php
+  # disable and stop other versions of php
   case $phpv {
   '55':  { 
 	service { ['php56_fpm', 'php70_fpm']:
