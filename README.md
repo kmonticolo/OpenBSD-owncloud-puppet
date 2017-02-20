@@ -5,12 +5,12 @@ First, you need to install module as root:
 ```
 sudo puppet module install puppetlabs-stdlib --version 4.15.0
 ```
-Then install owncloud using:
+Then modify site.pp to your needs and simply install owncloud using:
 ```
 sudo puppet apply site.pp
 ```
 After installation go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
-Default user, database name will be owncloud.
+Default admin user and password is "admin".
 
 For snapshot users:
 ```
