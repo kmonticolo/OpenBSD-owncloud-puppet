@@ -27,6 +27,7 @@ $tmpxbase = "/tmp/${xbase}"
 $httpdconf = "/etc/httpd.conf"
 
 include os
+#include os::clock
 include chroot
 include cert
 include postgresql
@@ -35,7 +36,7 @@ include postgresql
 #include php 
 include owncloud
 #include notice 
-include autoconfig
+include owncloud::autoconfig
 
 class os {
   class clock {
@@ -317,8 +318,6 @@ class owncloud {
 	ensure => latest,
 	require => [ Service["${phpservice}"], Service["httpd"] ]
   }
-include notice
-}
 
 class autoconfig {
   require owncloud
@@ -339,5 +338,7 @@ class autoconfig {
 	\"install\"	=> \"true\",
 	); \n",
   }
+}
+
 
 }
