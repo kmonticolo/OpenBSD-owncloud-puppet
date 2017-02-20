@@ -5,7 +5,12 @@ First, you need to install module as root:
 ```
 sudo puppet module install puppetlabs-stdlib --version 4.15.0
 ```
-Then modify site.pp to your needs and simply install owncloud using:
+Then modify site.pp to your needs:
+- PHP versions (5.5, 5.6, 7.0 are available),
+- $dbpass and $owncloud_db_pass should be changed,
+- $adminlogin and $adminpass, can be changed, default "admin",
+
+and simply install owncloud using:
 ```
 sudo puppet apply site.pp
 ```
