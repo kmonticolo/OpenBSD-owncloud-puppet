@@ -1,18 +1,20 @@
 include stdlib
+Exec { path => [  '/bin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
 # puppet module install puppetlabs-stdlib --version 4.15.0
-#Path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 
 $arch=$::facts['processors']['isa']
 $mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
 $dbpass = "abc123"
+$adminlogin = "admin"
+$adminpass = "admin"
 $owncloud_db_pass = "d5a148be21b8f643105759af71bea852"
-$pgpass = "/home/vagrant/.pgpass"
+$pgpass = "/tmp/.pgpass"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
-[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
-#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
+[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
 $phpservice = "php${phpv}_fpm"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
@@ -25,10 +27,11 @@ include chroot
 include cert
 include postgresql
 #include xbase
+#include httpd
+#include php 
 include owncloud
-include httpd
-include php 
-include notice 
+#include notice 
+include autoconfig
 
 class os {
   class clock {
@@ -36,7 +39,6 @@ class os {
        command => 'rdate ntp.task.gda.pl',
        cwd => '/root',
        user => root, 
-       path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
   }
 }
 
@@ -46,6 +48,11 @@ class os {
     mode => '0644',
     content => "installpath = ${pkgmirror}\n",
   }
+}
+
+class notice {
+notice (" owncloud database password:  ${owncloud_db_pass} ")
+notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
 }
 
 class chroot {
@@ -78,7 +85,6 @@ class cert {
 	command => 'openssl genrsa -out server.key',
 	cwd => '/root',
 	user => root, 
-	path => ["/usr/bin", "/usr/sbin"],
 	creates => "/root/server.key",
   }
 
@@ -86,7 +92,6 @@ class cert {
   exec {'create_self_signed_sslcert':
 	command => "openssl req -newkey rsa:2048 -nodes -keyout ${key} -x509 -days 365 -out ${cert} -subj  '/CN=${::fqdn}'",
         cwd => '/root',
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => [ "${key}", "${cert}" ],
   }
 }
@@ -118,7 +123,6 @@ class postgresql {
 	command => "initdb -D /var/postgresql/data -U postgres -A md5 --pwfile=${pgpass}",
 	user => "_postgresql",
 	creates => "/var/postgresql/data/PG_VERSION",
-	path => "/usr/local/bin/",
 	require => [ Package['postgresql-server'], File["${pgpass}"] ]
   }
 
@@ -134,7 +138,6 @@ class postgresql {
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD \'${owncloud_db_pass}\'\" && touch /var/postgresql/pg_user",
 	user => "_postgresql",
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_user",
 	require => Service['postgresql'],
   }
@@ -142,7 +145,6 @@ class postgresql {
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE DATABASE owncloud TEMPLATE template0 ENCODING \'UNICODE\'\" && touch /var/postgresql/pg_database",
 	user => "_postgresql",
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_database",
 	require => Service['postgresql'],
   }
@@ -151,7 +153,6 @@ class postgresql {
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"ALTER DATABASE owncloud OWNER TO owncloud\" && touch /var/postgresql/pg_alter",
 	user => "_postgresql",
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_alter",
 	require => Service['postgresql'],
   }
@@ -160,7 +161,6 @@ class postgresql {
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE owncloud TO owncloud\" && touch /var/postgresql/pg_grant",
 	user => "_postgresql",
-	path => ["/usr/local/bin/","/usr/bin", "/usr/sbin"],
 	creates => "/var/postgresql/pg_grant",
 	require => Service['postgresql'],
   }
@@ -172,15 +172,14 @@ class xbase {
   exec { 'chk_dir_exist':
 	command => "true",
 	onlyif => 'test -d ${dir}',
-	path => ["/usr/bin/","/bin/"],
   } 
 
   file { 'xbase':
-	path => '/tmp/xbase60.tgz',
+	path => "${tmpxbase}",
 	ensure => file,
 	mode => '0600',
 	source => "${basemirror}/${xbase}",
-	#require => Exec["chk_dir_exist"],
+	require => Exec["chk_dir_exist"],
   }
 
   exec { 'untar ${xbase} if needed':
@@ -284,16 +283,34 @@ $symlinks.each |String $symlinks| {
 
 class owncloud {
   require php
+  require httpd
 # installs owncloud package and others as deps
   package { 'owncloud': 
 	source => "${pkgmirror}",
-	ensure => installed,
+	ensure => latest,
 	require => [ Service["${phpservice}"], Service["httpd"] ]
   }
+include notice
 }
 
-class notice {
-#require owncloud
-notice (" owncloud database password:  ${owncloud_db_pass} ")
-notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
+class autoconfig {
+  require owncloud
+
+  file { '/var/www/owncloud/config/autoconfig.php':
+    owner => 'www',
+    group => 'www',
+    mode => '0640',
+    content => "<?php \n
+    \$AUTOCONFIG = array ( \n 
+	\"adminlogin\" 	=> \"${adminlogin}\",
+	\"adminpass\" 	=> \"${adminpass}\",
+	\"dbtype\" 	=> \"pgsql\",
+	\"dbname\"	=> \"owncloud\",
+	\"dbuser\"	=> \"owncloud\",
+	\"dbpass\"	=> \"${owncloud_db_pass}\",
+	\"dbhost\"	=> \"localhost\",
+	\"install\"	=> \"true\",
+	); \n",
+  }
+
 }
