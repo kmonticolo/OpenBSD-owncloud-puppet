@@ -13,8 +13,11 @@ $owncloud_db_pass = "d5a148be21b8f643105759af71bea852"
 $pgpass = "/tmp/.pgpass"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
-#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
-[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
+
+# choose one of supported PHP versions:
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "/etc/php-5.5" ] 
+[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
 $phpservice = "php${phpv}_fpm"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
@@ -272,6 +275,29 @@ $symlinks.each |String $symlinks| {
   file { [ '/etc/php-fpm.conf', "${phpvetc}.ini", "${phpvetc}/${symlinks}.ini" ]:
 	subscribe => Service["${phpservice}"],
   }
+
+  # disable other versions of php
+  case $phpv {
+  '55':  { 
+	service { ['php56_fpm', 'php70_fpm']:
+	  ensure => stopped,
+	  enable => false,
+	}
+  }
+  '56':  { 
+	service { [ 'php55_fpm', 'php70_fpm' ]:
+	  ensure => stopped,
+	  enable => false,
+	}
+  }
+  '70':  { 
+	service { ['php55_fpm', 'php56_fpm']:
+	  ensure => stopped,
+	  enable => false,
+	}
+  }
+}
+
   service { "${phpservice}":
 	ensure => running,
 	enable => true,
