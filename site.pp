@@ -1,30 +1,32 @@
 include stdlib
 Exec { path => [  '/bin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
 # puppet module install puppetlabs-stdlib --version 4.15.0
-
+# os specific stuff
 $arch=$::facts['processors']['isa']
 $mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
+$osmajor = $::facts['os']['release']['major']
+$osminor = $::facts['os']['release']['minor']
+$xbase = "xbase${osmajor}${osminor}.tgz"
+$tmpxbase = "/tmp/${xbase}"
+# postgresql stuff
 $dbpass = "changeme"
+$pgpass = "/tmp/.pgpass"
+$pguser = "_postgresql"
+# owncloud stuff
 $adminlogin = "admin"
 $adminpass = "admin"
 $owncloud_db_pass = "changeme"
-$pgpass = "/tmp/.pgpass"
-$pguser = "_postgresql"
+# cert stuff
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
-
+$httpdconf = "/etc/httpd.conf"
 # choose one of supported PHP versions:
 #[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "/etc/php-5.5" ] 
 [ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
 $phpservice = "php${phpv}_fpm"
-$osmajor = $::facts['os']['release']['major']
-$osminor = $::facts['os']['release']['minor']
-$xbase = "xbase${osmajor}${osminor}.tgz"
-$tmpxbase = "/tmp/${xbase}"
-$httpdconf = "/etc/httpd.conf"
 
 include os
 #include os::clock
