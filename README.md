@@ -34,3 +34,7 @@ pkg_add -u
 puppet module install puppetlabs-stdlib --version 4.15.0
 puppet apply sitesnap.pp
 ```
+If you want to uninstall, type:
+```
+pkg_delete -a owncloud postgresql-server postgresql-client php
+```
