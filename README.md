@@ -16,6 +16,7 @@ sudo puppet apply site.pp
 ```
 After installation go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
 Default admin user and password is "admin".
+You may also need to raise kern.seminfo.semmni sysctl for postgres database.
 
 For snapshot users:
 ```
