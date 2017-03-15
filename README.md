@@ -3,7 +3,7 @@ Puppet boilerplate manifest to unattended installation owncloud on OpenBSD's htt
 
 First, you need to install module as root: 
 ```
-sudo puppet module install puppetlabs-stdlib --version 4.15.0
+sudo puppet module install puppetlabs-stdlib
 ```
 Then modify site.pp to your needs:
 - PHP versions (5.5, 5.6, 7.0 are available),
@@ -15,7 +15,9 @@ and simply install owncloud using:
 sudo puppet apply site.pp
 ```
 After installation go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
+
 Default admin user and password is "admin".
+
 You may also need to raise kern.seminfo.semmni sysctl for postgres database.
 
 For snapshot users:
