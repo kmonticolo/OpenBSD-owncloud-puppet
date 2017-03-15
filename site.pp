@@ -174,7 +174,7 @@ class postgresql {
 }
 	
 class xbase {
-  $dir = "/usr/X11R6/bin/"
+  $dir = "/usr/X11R6/lib"
 
 
   exec { 'download ${xbase}':
@@ -189,7 +189,7 @@ class xbase {
   }
 
   exec { 'ldconfig':
-	command => "/sbin/ldconfig -m /usr/X11R6/lib",
+	command => "/sbin/ldconfig -m ${dir}",
   }
 
 }
