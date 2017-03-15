@@ -176,23 +176,18 @@ class postgresql {
 class xbase {
   $dir = "/usr/X11R6/bin/"
 
-  exec { 'chk_dir_exist':
-	command => "true",
-	onlyif => 'test -d ${dir}',
-  } 
 
-  file { 'xbase':
-	path => "${tmpxbase}",
-	ensure => file,
-	mode => '0600',
-	source => "${basemirror}/${xbase}",
-	require => Exec["chk_dir_exist"],
+  exec { 'download ${xbase}':
+	command => "ftp -o - ${basemirror}${xbase} > ${tmpxbase}",
+	creates => "${tmpxbase}",
+	unless  => "test -d ${dir}",
   }
 
-  exec { 'untar ${xbase} if needed':
+  exec { 'untar ${xbase}':
 	command => "/bin/tar zxpfh ${tmpxbase} -C /",
 	creates => "${dir}",
   }
+
   exec { 'ldconfig':
 	command => "/sbin/ldconfig -m /usr/X11R6/lib",
   }
