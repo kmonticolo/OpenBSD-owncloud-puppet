@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
    test -f /etc/installurl || echo "http://ftp.icm.edu.pl/pub/OpenBSD" > /etc/installurl
    which puppet 2>/dev/null || pkg_add http://piotrkosoft.net/pub/OpenBSD/6.0/packages/amd64/puppet-4.5.2p0.tgz
    for i in /usr/local/bin/*[0-9][0-9]; do j=`echo $i | sed 's/[0-9][0-9]$//'`; test -L $j || ln -s $i $j;done
-   puppet module list|grep -q stdlib || puppet module install puppetlabs-stdlib --version 4.15.0
+   puppet module list|grep -q stdlib || puppet module install puppetlabs-stdlib
    puppet apply /home/vagrant/site.pp
    SHELL
 end
