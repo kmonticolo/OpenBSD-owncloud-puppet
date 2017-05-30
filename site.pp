@@ -23,9 +23,14 @@ $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 $httpdconf = "/etc/httpd.conf"
 # choose one of supported PHP versions:
-#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "/etc/php-5.5" ] 
-[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ] 
-#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ] 
+# for 6.0
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "/etc/php-5.5" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "/etc/php-7.0" ]
+# for 6.1
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.38p0", "/etc/php-5.5" ]
+[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "/etc/php-5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.16", "/etc/php-7.0" ]
 $phpservice = "php${phpv}_fpm"
 
 include os
