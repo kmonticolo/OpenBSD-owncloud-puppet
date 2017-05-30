@@ -3,7 +3,7 @@ Exec { path => [  '/bin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
 # puppet module install puppetlabs-stdlib --version 4.15.0
 # os specific stuff
 $arch=$::facts['processors']['isa']
-$mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
+$mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
 $osmajor = $::facts['os']['release']['major']
