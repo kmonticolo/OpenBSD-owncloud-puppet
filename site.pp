@@ -23,6 +23,31 @@ $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 $httpdconf = "/etc/httpd.conf"
 # choose one of supported PHP versions:
+# for 5.2
+#[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p12", "/etc/php-5.2" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.14p1", "/etc/php-5.3" ]
+# for 5.3
+#[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p13", "/etc/php-5.2" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.21", "/etc/php-5.3" ]
+# for 5.4
+#[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p16", "/etc/php-5.2" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.27", "/etc/php-5.3" ]
+# for 5.5
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.28p2", "/etc/php-5.3" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.24", "/etc/php-5.4" ]
+# for 5.6
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.28p10", "/etc/php-5.3" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.30p0", "/etc/php-5.4" ]
+# for 5.7
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.29p1", "/etc/php-5.3" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.38", "/etc/php-5.4" ]
+# for 5.8
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.43", "/etc/php-5.4" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "php-5.5.27", "/etc/php-5.5" ]
+# for 5.9
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.45p2", "/etc/php-5.4" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "php-5.5.32", "/etc/php-5.5" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "php-5.6.18", "/etc/php-5.6" ]
 # for 6.0
 #[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "/etc/php-5.5" ]
 [ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "/etc/php-5.6" ]
