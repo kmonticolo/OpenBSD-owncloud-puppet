@@ -307,6 +307,24 @@ $symlinks.each |String $symlinks| {
 
   # disable and stop other versions of php
   case $phpv {
+   '52':  { 
+	service { ['php53_fpm', 'php54_fpm']:
+	  ensure => stopped,
+	  enable => false,
+	}
+  }
+  '53':  { 
+	service { ['php52_fpm', 'php54_fpm']:
+	  ensure => stopped,
+	  enable => false,
+	}
+  }
+  '54':  { 
+	service { ['php52_fpm', 'php53_fpm','php55_fpm' ]:
+	  ensure => stopped,
+	  enable => false,
+	}
+  }
   '55':  { 
 	service { ['php56_fpm', 'php70_fpm']:
 	  ensure => stopped,
