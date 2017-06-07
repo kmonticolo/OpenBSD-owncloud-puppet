@@ -90,8 +90,11 @@ class os {
 }
 
 class notice {
+$adminlogin = "admin"
+$adminpass = "admin"
 notice (" owncloud database password:  ${owncloud_db_pass} ")
 notice (" user and dbname: owncloud. URL: https://${ip}/index.html ")
+notice (" admin login: ${adminlogin} with password: ${adminpass} ")
 }
 
 class chroot {
