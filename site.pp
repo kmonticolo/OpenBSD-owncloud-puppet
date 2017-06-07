@@ -8,6 +8,7 @@ $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
+$ip = $::facts['networking']['interfaces']['em1']['ip']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
 # postgresql stuff
@@ -68,7 +69,7 @@ include postgresql
 #include httpd
 #include php 
 include owncloud
-#include notice 
+include notice 
 include owncloud::autoconfig
 
 class os {
@@ -90,7 +91,7 @@ class os {
 
 class notice {
 notice (" owncloud database password:  ${owncloud_db_pass} ")
-notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
+notice (" user and dbname: owncloud. URL: https://${ip}/index.html ")
 }
 
 class chroot {
