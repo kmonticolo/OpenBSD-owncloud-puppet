@@ -135,12 +135,16 @@ class chroot {
         command => 'umount -f /var',
         cwd => '/',
         user => root,
+	onlyif => 'mount | grep -q /var.*nodev',
+  }
   }
 
   exec { 'mount /var again':
         command => 'mount /var',
         cwd => '/',
         user => root,
+	onlyif => 'mount | grep -q /var.*nodev',
+  }
   }
 
   exec { 'generate chroot dev subsystem': 
