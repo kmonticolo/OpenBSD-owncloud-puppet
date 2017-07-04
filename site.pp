@@ -98,6 +98,7 @@ notice (" admin login: ${adminlogin} with password: ${adminpass} ")
 class chroot {
   file { [ '/var/www/usr',
 	 '/var/www/etc',
+	 '/var/www/dev',
 	 '/var/www/usr/share',
          '/var/www/usr/share/locale',
          '/var/www/usr/share/locale/UTF-8/', ]:
@@ -114,9 +115,20 @@ class chroot {
 	source => '/etc/hosts'
   }	
 
+  file { '/var/www/dev/MAKEDEV':
+	source => '/dev/MAKEDEV'
+  }	
+
   file { '/var/www/etc/resolv.conf':
 	source => '/etc/resolv.conf'
   }	
+
+  exec { 'generate chroot dev subsystem': 
+	command => 'sh MAKEDEV urandom',
+	cwd => '/var/www/dev',
+	user => root, 
+	creates => "/var/www/dev/urandom",
+  }
 }
 
 class cert {
