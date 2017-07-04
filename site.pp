@@ -123,10 +123,8 @@ class chroot {
 	source => '/etc/resolv.conf'
   }	
 
-
-# awk 'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } '  </etc/fstab
   exec { 'remove nodev option from /var mountpoint':
-        command => 'awk \'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } \'  </etc/fstab',
+        command => "grep  /var /etc/fstab |sed 's/\(.*\)nodev,/\1 /' >/tmp/x; grep -v /var /etc/fstab >/tmp/y ; cat /tmp/x >>/tmp/y ; cp -f /tmp/y /etc/fstab",
         cwd => '/',
         user => root,
   }
