@@ -24,6 +24,7 @@ $owncloud_cron = "/var/www/owncloud/cron.php"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 $httpdconf = "/etc/httpd.conf"
+$phpbin = "/usr/local/bin/php"
 # choose one of supported PHP versions:
 # for 5.2
 #[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p12", "5.2" ]
@@ -251,12 +252,12 @@ class xbase {
   }
 
   exec { 'untar ${xbase}':
-	command => "/bin/tar zxpfh ${tmpxbase} -C /",
+	command => "tar zxpfh ${tmpxbase} -C /",
 	creates => "${dir}",
   }
 
   exec { 'ldconfig':
-	command => "/sbin/ldconfig -m ${dir}",
+	command => "ldconfig -m ${dir}",
 	onlyif => "ldconfig -r | grep -q ${dir}",
   }
 
@@ -321,6 +322,12 @@ class php {
 	require => Package['postgresql-server'],
 	before	=> Package['owncloud'],
   }
+
+  file { "${phpbin}":
+	ensure => 'link',
+	target => "${phpbin}-${phpvetc}"
+  }
+
 $symlinks= [	'bz2', 
 		'curl', 
 		'gd', 
@@ -428,7 +435,7 @@ file { "/var/www/owncloud/cron.php":
 }
 
 cron { 'owncloud':   
-   command => "${owncloud_cron}",
+   command => "${phpbin} ${owncloud_cron}",
    user    => www,
    hour    => '*',   
    minute  => '*/15',
