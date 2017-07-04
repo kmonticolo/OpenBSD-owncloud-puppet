@@ -24,6 +24,7 @@ $owncloud_cron = "/var/www/owncloud/cron.php"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 $httpdconf = "/etc/httpd.conf"
+$phpbin = "/usr/local/bin/php"
 # choose one of supported PHP versions:
 # for 5.2
 #[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p12", "5.2" ]
@@ -322,9 +323,9 @@ class php {
 	before	=> Package['owncloud'],
   }
 
-  file { '/usr/local/bin/php':
+  file { "${phpbin}":
 	ensure => 'link',
-	target => "/usr/local/bin/php-${phpvetc}"
+	target => "${phpbin}-${phpvetc}"
   }
 
 $symlinks= [	'bz2', 
@@ -434,7 +435,7 @@ file { "/var/www/owncloud/cron.php":
 }
 
 cron { 'owncloud':   
-   command => "${owncloud_cron}",
+   command => "${phpbin} ${owncloud_cron}",
    user    => www,
    hour    => '*',   
    minute  => '*/15',
