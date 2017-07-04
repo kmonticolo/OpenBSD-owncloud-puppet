@@ -123,6 +123,27 @@ class chroot {
 	source => '/etc/resolv.conf'
   }	
 
+
+# awk 'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } '  </etc/fstab
+  exec { 'remove nodev option from /var mountpoint':
+        command => 'awk 'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } '  </etc/fstab',
+        cwd => '/',
+        user => root,
+  }
+
+
+  exec { 'force umount /var':
+        command => 'umount -f /var',
+        cwd => '/',
+        user => root,
+  }
+
+  exec { 'mount /var again':
+        command => 'mount /var',
+        cwd => '/',
+        user => root,
+  }
+
   exec { 'generate chroot dev subsystem': 
 	command => 'sh MAKEDEV urandom',
 	cwd => '/var/www/dev',
