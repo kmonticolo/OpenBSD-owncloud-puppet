@@ -126,7 +126,7 @@ class chroot {
 
 # awk 'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } '  </etc/fstab
   exec { 'remove nodev option from /var mountpoint':
-        command => 'awk 'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } '  </etc/fstab',
+        command => 'awk \'BEGIN { $2 ~ /var/ } END { print $1" "$2 " " $3" " "rw,nosuid" " " "1 2" } \'  </etc/fstab',
         cwd => '/',
         user => root,
   }
