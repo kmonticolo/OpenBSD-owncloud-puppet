@@ -127,7 +127,7 @@ class chroot {
         command => "cp /etc/fstab /etc/fstab.orig; grep  /var /etc/fstab |sed 's/\(.*\)nodev,/\1/' >/tmp/x; grep -v /var /etc/fstab >/tmp/y ; cat /tmp/x >>/tmp/y ; cp -f /tmp/y /etc/fstab; rm -f /tmp/x /tmp/y",
         cwd => '/',
         user => root,
-	#onlyif
+	onlyif => 'grep -q /var.*nodev /etc/fstab',
   }
 
 
