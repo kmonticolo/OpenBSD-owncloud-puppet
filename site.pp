@@ -257,6 +257,7 @@ class xbase {
 
   exec { 'ldconfig':
 	command => "/sbin/ldconfig -m ${dir}",
+	onlyif => "ldconfig -r | grep -q ${dir}",
   }
 
 }
