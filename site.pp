@@ -140,10 +140,9 @@ class chroot {
   }
 
   exec { 'mount /var again':
-        command => 'mount /var',
+        command => 'mount -a',
         cwd => '/',
         user => root,
-	onlyif => 'mount | grep -vq /var.*nodev',
   }
 
   exec { 'generate chroot dev subsystem': 
