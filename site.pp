@@ -19,6 +19,7 @@ $pguser = "_postgresql"
 $adminlogin = "admin"
 $adminpass = "admin"
 $owncloud_db_pass = "changeme"
+$owncloud_cron = "/var/www/owncloud/cron.php"
 # cert stuff
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
@@ -422,5 +423,16 @@ class autoconfig {
   }
 }
 
+file { "/var/www/owncloud/cron.php":
+	ensure => "file"
+}
+
+cron { 'owncloud':   
+   command => "${owncloud_cron}",
+   user    => www,
+   hour    => '*',   
+   minute  => '*/15',
+   require => File["${owncloud_cron}"]
+}
 
 }
