@@ -251,12 +251,12 @@ class xbase {
   }
 
   exec { 'untar ${xbase}':
-	command => "/bin/tar zxpfh ${tmpxbase} -C /",
+	command => "tar zxpfh ${tmpxbase} -C /",
 	creates => "${dir}",
   }
 
   exec { 'ldconfig':
-	command => "/sbin/ldconfig -m ${dir}",
+	command => "ldconfig -m ${dir}",
 	onlyif => "ldconfig -r | grep -q ${dir}",
   }
 
@@ -321,6 +321,12 @@ class php {
 	require => Package['postgresql-server'],
 	before	=> Package['owncloud'],
   }
+
+  file { '/usr/local/bin/php':
+	ensure => 'link',
+	target => "/usr/local/bin/php-${phpvetc}"
+  }
+
 $symlinks= [	'bz2', 
 		'curl', 
 		'gd', 
