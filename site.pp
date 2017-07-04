@@ -1,5 +1,5 @@
 include stdlib
-Exec { path => [  '/bin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
+Exec { path => [  '/bin/', '/sbin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
 # puppet module install puppetlabs-stdlib --version 4.15.0
 # os specific stuff
 $arch=$::facts['processors']['isa']
