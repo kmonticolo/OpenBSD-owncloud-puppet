@@ -258,7 +258,6 @@ class xbase {
 
   exec { 'ldconfig':
 	command => "ldconfig -m ${dir}",
-	onlyif => "ldconfig -r | grep -q ${dir}",
   }
 
 }
