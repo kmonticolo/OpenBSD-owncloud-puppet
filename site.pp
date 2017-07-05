@@ -439,7 +439,7 @@ cron { 'owncloud':
    user    => www,
    hour    => '*',   
    minute  => '*/15',
-   require => File["${owncloud_cron}"]
+   require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
 }
 
 }
