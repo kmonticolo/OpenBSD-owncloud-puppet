@@ -425,11 +425,11 @@ class autoconfig {
 	\"dbpass\"	=> \"${owncloud_db_pass}\",
 	\"dbhost\"	=> \"localhost\",
 	\"install\"	=> \"true\",
-	); \n",
+	); \n?>",
   }
 }
 
-file { "/var/www/owncloud/cron.php":
+file { "${owncloud_cron}":
 	ensure => "file"
 }
 
