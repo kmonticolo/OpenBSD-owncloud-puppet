@@ -6,7 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "openbsd60.nplusn.com"
   config.vm.network "public_network"
   config.vm.provision "shell", inline: <<-SHELL
-   ftp -o - https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/site.pp >site.pp
+   ftp -o - https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/develop/site.pp >site.pp
    test -f /etc/pkg.conf || echo "installpath = http://ftp.icm.edu.pl/pub/OpenBSD/%c/packages/%a/" > /etc/pkg.conf
    test -f /etc/installurl || echo "http://ftp.icm.edu.pl/pub/OpenBSD" > /etc/installurl
    unset PKG_PATH
