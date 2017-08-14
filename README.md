@@ -14,9 +14,10 @@ and simply install owncloud using:
 ```
 sudo puppet apply site.pp
 ```
-After installation go to `https://IP/index.html/index.php` and accept self-signed certificate to do final installation.
+After installation go to `https://IP/index.html/index.php`
+This instance will be using a self-signed certificate, so you will have to add an exception for this in your web browser.
 
-Default admin user and password is "admin".
+Default admin user and password is "admin", you can change it in manifest.
 
 You may also need to raise kern.seminfo.semmni sysctl for postgres database.
 
