@@ -53,11 +53,11 @@ $phpbin = "/usr/local/bin/php"
 #[ $phpv, $phpver, $phpvetc ] = [ "56", "php-5.6.18", "5.6" ]
 # for 6.0
 #[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "5.5" ]
-[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "5.6" ]
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "7.0" ]
 # for 6.1
 #[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.38p0", "5.5" ]
-#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "5.6" ]
+[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "5.6" ]
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.16", "7.0" ]
 # for 6.2 snapshot
 #[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "5.6" ]
@@ -202,7 +202,8 @@ class postgresql {
 	command => "initdb -D /var/postgresql/data -U postgres -A md5 --pwfile=${pgpass}",
 	user => "${pguser}",
 	creates => "/var/postgresql/data/PG_VERSION",
-	require => [ Package['postgresql-server'], File["${pgpass}"] ]
+	require => [ Package['postgresql-server'], File["${pgpass}"] ],
+	cwd	=> "/usr/local/bin/",
   }
 
 
@@ -219,6 +220,7 @@ class postgresql {
 	user => "${pguser}",
 	creates => "/var/postgresql/pg_user",
 	require => Service['postgresql'],
+	cwd	=> "/usr/local/bin/",
   }
   exec { 'create PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
@@ -226,6 +228,7 @@ class postgresql {
 	user => "${pguser}",
 	creates => "/var/postgresql/pg_database",
 	require => Service['postgresql'],
+	cwd	=> "/usr/local/bin/",
   }
 	
   exec { 'alter PG database':
@@ -234,6 +237,7 @@ class postgresql {
 	user => "${pguser}",
 	creates => "/var/postgresql/pg_alter",
 	require => Service['postgresql'],
+	cwd	=> "/usr/local/bin/",
   }
 	
   exec { 'grant PG privileges':
@@ -242,6 +246,7 @@ class postgresql {
 	user => "${pguser}",
 	creates => "/var/postgresql/pg_grant",
 	require => Service['postgresql'],
+	cwd	=> "/usr/local/bin/",
   }
 }
 	
