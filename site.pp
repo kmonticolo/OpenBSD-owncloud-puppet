@@ -11,6 +11,7 @@ $osminor = $::facts['os']['release']['minor']
 $ip = $::facts['networking']['interfaces']['em1']['ip']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
+$chrootdir = "/var/www"
 # postgresql stuff
 $dbpass = "changeme"
 $pgpass = "/tmp/.pgpass"
@@ -19,7 +20,7 @@ $pguser = "_postgresql"
 $adminlogin = "admin"
 $adminpass = "admin"
 $owncloud_db_pass = "changeme"
-$owncloud_cron = "/var/www/owncloud/cron.php"
+$owncloud_cron = "${chrootdir}/owncloud/cron.php"
 # cert stuff
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
@@ -102,30 +103,30 @@ notice (" admin login: ${adminlogin} with password: ${adminpass} ")
 }
 
 class chroot {
-  file { [ '/var/www/usr',
-	 '/var/www/etc',
-	 '/var/www/dev',
-	 '/var/www/usr/share',
-         '/var/www/usr/share/locale',
-         '/var/www/usr/share/locale/UTF-8/', ]:
+  file { [ "${chrootdir}/usr",
+	 "${chrootdir}/etc",
+	 "${chrootdir}/dev",
+	 "${chrootdir}/usr/share",
+         "${chrootdir}/usr/share/locale",
+         "${chrootdir}/usr/share/locale/UTF-8/", ]:
 	ensure => directory,
 	recurse => true,
   }
 
-  file { '/var/www/usr/share/locale/UTF-8/LC_CTYPE':
+  file { "${chrootdir}/usr/share/locale/UTF-8/LC_CTYPE":
 	source => '/usr/share/locale/UTF-8/LC_CTYPE',
-	require => File['/var/www/usr/share/locale/UTF-8/'],
+	require => File["${chrootdir}/usr/share/locale/UTF-8/"],
   }	
 
-  file { '/var/www/etc/hosts':
+  file { "${chrootdir}/etc/hosts":
 	source => '/etc/hosts'
   }	
 
-  file { '/var/www/dev/MAKEDEV':
+  file { "${chrootdir}/dev/MAKEDEV":
 	source => '/dev/MAKEDEV'
   }	
 
-  file { '/var/www/etc/resolv.conf':
+  file { "${chrootdir}/etc/resolv.conf":
 	source => '/etc/resolv.conf'
   }	
 
@@ -152,9 +153,9 @@ class chroot {
 
   exec { 'generate chroot dev subsystem': 
 	command => 'sh MAKEDEV urandom',
-	cwd => '/var/www/dev',
+	cwd => "${chrootdir}/dev",
 	user => root, 
-	creates => "/var/www/dev/urandom",
+	creates => "${chrootdir}/dev/urandom",
   }
 }
 
@@ -420,7 +421,7 @@ class owncloud {
 class autoconfig {
   require owncloud
 
-  file { '/var/www/owncloud/config/autoconfig.php':
+  file { "${chrootdir}/owncloud/config/autoconfig.php":
     owner => 'www',
     group => 'www',
     mode => '0640',
