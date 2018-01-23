@@ -6,6 +6,7 @@ $arch=$::facts['processors']['isa']
 $mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
+$rcfile = "/etc/rc.conf.local"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
 $ip = $::facts['networking']['ip']
@@ -93,6 +94,11 @@ class os {
     group => 'wheel',
     mode => '0644',
     content => "installpath = ${pkgmirror}\n",
+  }
+  file_line { 'enable crontab':
+        path => "${rcfile}",
+        line => "cron_flags=\"\"",
+        match   => "^$",
   }
 }
 
