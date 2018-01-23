@@ -89,7 +89,7 @@ class os {
   }
 }
   file { "${rcfile}":
-	ensure => file,
+     ensure => file,
   }	
 	
   file { '/etc/pkg.conf':
