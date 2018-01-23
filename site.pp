@@ -1,6 +1,6 @@
 include stdlib
 Exec { path => [  '/bin/', '/sbin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
-# puppet module install puppetlabs-stdlib  
+# puppet module install puppetlabs-stdlib
 # os specific stuff 
 $arch=$::facts['processors']['isa']
 $mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
