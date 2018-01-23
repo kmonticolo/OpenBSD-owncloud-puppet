@@ -88,7 +88,10 @@ class os {
        user => root, 
   }
 }
-
+  file { "${rcfile}":
+	ensure => file,
+  }	
+	
   file { '/etc/pkg.conf':
     owner => 'root',
     group => 'wheel',
