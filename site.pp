@@ -80,7 +80,7 @@ include php
 include owncloud
 include notice 
 include owncloud::autoconfig
-include cron
+include owncloud::cron
 
 class os {
   class clock {
