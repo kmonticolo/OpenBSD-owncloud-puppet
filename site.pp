@@ -462,7 +462,7 @@ class cron {
     ensure => "file"
 }
 
-cron { 'owncloud':   
+cron { 'owncloud':
    command => "${phpbin} ${owncloud_cron}",
    user    => www,
    hour    => '*',   
