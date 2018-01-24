@@ -80,6 +80,7 @@ include php
 include owncloud
 include notice 
 include owncloud::autoconfig
+include cron
 
 class os {
   class clock {
@@ -455,16 +456,19 @@ class autoconfig {
 }
 
 
-#file { "${owncloud_cron}":
-	#ensure => "file"
-#}
+class cron {
+  require owncloud
+  file { "${owncloud_cron}":
+    ensure => "file"
+}
 
-#cron { 'owncloud':   
-#   command => "${phpbin} ${owncloud_cron}",
-#   user    => www,
-#   hour    => '*',   
-#   minute  => '*/15',
-#   require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
-#}
+cron { 'owncloud':   
+   command => "${phpbin} ${owncloud_cron}",
+   user    => www,
+   hour    => '*',   
+   minute  => '*/15',
+   require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
+  }
+}
 
 }
