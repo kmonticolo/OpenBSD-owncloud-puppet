@@ -1,15 +1,14 @@
 include stdlib
 Exec { path => [  '/bin/', '/sbin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
-# puppet module install puppetlabs-stdlib
-# os specific stuff 
+# puppet module install puppetlabs-stdlib 
+# os specific stuff
 $arch=$::facts['processors']['isa']
 $mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
-$rcfile = "/etc/rc.conf.local"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
-$ip = $::facts['networking']['ip']
+$ip = $::facts['networking']['interfaces']['em1']['ip']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
 $chrootdir = "/var/www"
@@ -59,10 +58,10 @@ $phpbin = "/usr/local/bin/php"
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "7.0" ]
 # for 6.1
 #[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.38p0", "5.5" ]
-#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "5.6" ]
+[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "5.6" ]
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.16", "7.0" ]
 # for 6.2 snapshot
-[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "5.6" ]
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.23", "7.0" ]
 
 
@@ -88,20 +87,12 @@ class os {
        user => root, 
   }
 }
-  file { "${rcfile}":
-     ensure => file,
-  }	
-	
+
   file { '/etc/pkg.conf':
     owner => 'root',
     group => 'wheel',
     mode => '0644',
     content => "installpath = ${pkgmirror}\n",
-  }
-  file_line { 'enable crontab':
-        path => "${rcfile}",
-        line => "cron_flags=\"\"",
-        match   => "^$",
   }
 }
 
