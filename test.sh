@@ -76,4 +76,8 @@ echo
 echo $((i=i+1)) php fpm proc  --------------------------------
 ps aux|grep php-fpm|grep 7.0 || err_flag=$i
 
-[ $err_flag ] && { echo ERROR at step $i; exit 1 }
+if ( [ $err_flag ] ); then 
+echo ERROR at step $i
+exit 1 
+fi
+
