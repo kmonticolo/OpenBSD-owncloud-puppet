@@ -303,6 +303,12 @@ class php {
 	require => Package['postgresql-server'],
 	before	=> Package['owncloud'],
   }
+  
+  file { "${phpbin}":
+	ensure => 'link',
+	target => "${phpbin}-${phpvetc}"
+  }
+  
 $symlinks= [	'bz2', 
 		'curl', 
 		'gd', 
