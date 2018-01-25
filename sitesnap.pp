@@ -321,8 +321,8 @@ $symlinks.each |String $symlinks| {
   }
 }
 
-  file { [ '/etc/php-fpm.conf', "${phpvetc}.ini", "${phpvetc}/${symlinks}.ini" ]:
-	subscribe => Service["${phpservice}"],
+  file { [ '/etc/php-fpm.conf', "/etc/php-${phpvetc}.ini", "/etc/php-${phpvetc}/${symlinks}.ini" ]:
+        subscribe => Service["${phpservice}"],
   }
 
   # disable and stop other versions of php
