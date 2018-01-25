@@ -256,8 +256,8 @@ class php {
 	    'php-pdo_pgsql'
   ]: 
 	source => "${pkgmirror}",
-	#ensure => "${phpver}",
-	ensure => "latest",
+	ensure => "${phpver}",
+	#ensure => "latest",
 	require => Package['postgresql-server'],
 	before	=> Package['owncloud'],
   }
