@@ -17,9 +17,8 @@ $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 
 # choose one of supported PHP versions:
-#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "/etc/php-5.5" ] 
-#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "/etc/php-5.6" ] 
-[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.15", "/etc/php-7.0" ] 
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "/etc/php-5.6" ] 
+[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.23", "/etc/php-7.0" ] 
 $phpservice = "php${phpv}_fpm"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
