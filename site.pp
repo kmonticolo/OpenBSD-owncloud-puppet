@@ -2,14 +2,12 @@ include stdlib
 Exec { path => [  '/bin/', '/sbin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
 # puppet module install puppetlabs-stdlib 
 # os specific stuff 
-#$arch=$::facts['processors']['isa']
 $arch=$::facts['architecture']
 $mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
-#$ip = $::facts['networking']['ip']
 $ip = $::facts['ipaddress']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
@@ -70,17 +68,16 @@ $phpbin = "/usr/local/bin/php"
 $phpservice = "php${phpv}_fpm"
 
 include os
-#include os::clock
 include chroot
 include cert
 include postgresql
-include xbase
-include httpd
-include php 
+#include xbase
+#include httpd
+#include php 
 include owncloud
-include notice 
-include owncloud::autoconfig
-include owncloud::cron
+#include notice 
+include autoconfig
+include cron
 
 class os {
   class clock {
@@ -101,65 +98,31 @@ class os {
 
 class notice {
 notice (" owncloud database password:  ${owncloud_db_pass} ")
-notice (" user and dbname: owncloud. URL: https://${ip}/index.html ")
-notice (" admin login: ${adminlogin} with password: ${adminpass} ")
+notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
 }
 
 class chroot {
-  file { [ "${chrootdir}/usr",
-	 "${chrootdir}/etc",
-	 "${chrootdir}/dev",
-	 "${chrootdir}/usr/share",
-         "${chrootdir}/usr/share/locale",
-         "${chrootdir}/usr/share/locale/UTF-8/", ]:
+  file { [ '/var/www/usr',
+	 '/var/www/etc',
+	 '/var/www/usr/share',
+         '/var/www/usr/share/locale',
+         '/var/www/usr/share/locale/UTF-8/', ]:
 	ensure => directory,
 	recurse => true,
   }
 
-  file { "${chrootdir}/usr/share/locale/UTF-8/LC_CTYPE":
+  file { '/var/www/usr/share/locale/UTF-8/LC_CTYPE':
 	source => '/usr/share/locale/UTF-8/LC_CTYPE',
-	require => File["${chrootdir}/usr/share/locale/UTF-8/"],
+	require => File['/var/www/usr/share/locale/UTF-8/'],
   }	
 
-  file { "${chrootdir}/etc/hosts":
+  file { '/var/www/etc/hosts':
 	source => '/etc/hosts'
   }	
 
-  file { "${chrootdir}/dev/MAKEDEV":
-	source => '/dev/MAKEDEV'
-  }	
-
-  file { "${chrootdir}/etc/resolv.conf":
+  file { '/var/www/etc/resolv.conf':
 	source => '/etc/resolv.conf'
   }	
-
-  exec { 'remove nodev option from /var mountpoint':
-        command => "cp /etc/fstab /etc/fstab.orig; grep  /var /etc/fstab |sed 's/\(.*\)nodev,/\1/' >/tmp/x; grep -v /var /etc/fstab >/tmp/y ; cat /tmp/x >>/tmp/y ; cp -f /tmp/y /etc/fstab; rm -f /tmp/x /tmp/y",
-        cwd => '/',
-        user => root,
-	onlyif => 'grep -q /var.*nodev /etc/fstab',
-  }
-
-
-  exec { 'force umount /var':
-        command => 'umount -f /var',
-        cwd => '/',
-        user => root,
-	onlyif => 'mount | grep -q /var.*nodev',
-  }
-
-  exec { 'mount /var again':
-        command => 'mount -a',
-        cwd => '/',
-        user => root,
-  }
-
-  exec { 'generate chroot dev subsystem': 
-	command => 'sh MAKEDEV urandom',
-	cwd => "${chrootdir}/dev",
-	user => root, 
-	creates => "${chrootdir}/dev/urandom",
-  }
 }
 
 class cert {
@@ -205,9 +168,9 @@ class postgresql {
   exec {'exec initdb':
 	command => "initdb -D /var/postgresql/data -U postgres -A md5 --pwfile=${pgpass}",
 	user => "${pguser}",
+	cwd => '/tmp',
 	creates => "/var/postgresql/data/PG_VERSION",
-	require => [ Package['postgresql-server'], File["${pgpass}"] ],
-	cwd	=> "/usr/local/bin/",
+	require => [ Package['postgresql-server'], File["${pgpass}"] ]
   }
 
 
@@ -222,55 +185,60 @@ class postgresql {
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE USER owncloud WITH PASSWORD \'${owncloud_db_pass}\'\" && touch /var/postgresql/pg_user",
 	user => "${pguser}",
+	cwd => '/tmp',
 	creates => "/var/postgresql/pg_user",
 	require => Service['postgresql'],
-	cwd	=> "/usr/local/bin/",
   }
   exec { 'create PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"CREATE DATABASE owncloud TEMPLATE template0 ENCODING \'UNICODE\'\" && touch /var/postgresql/pg_database",
 	user => "${pguser}",
+	cwd => '/tmp',
 	creates => "/var/postgresql/pg_database",
 	require => Service['postgresql'],
-	cwd	=> "/usr/local/bin/",
   }
 	
   exec { 'alter PG database':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"ALTER DATABASE owncloud OWNER TO owncloud\" && touch /var/postgresql/pg_alter",
 	user => "${pguser}",
+	cwd => '/tmp',
 	creates => "/var/postgresql/pg_alter",
 	require => Service['postgresql'],
-	cwd	=> "/usr/local/bin/",
   }
 	
   exec { 'grant PG privileges':
 	environment => ["PGPASSWORD=${dbpass}"],
 	command => "psql -U postgres -c \"GRANT ALL PRIVILEGES ON DATABASE owncloud TO owncloud\" && touch /var/postgresql/pg_grant",
 	user => "${pguser}",
+	cwd => '/tmp',
 	creates => "/var/postgresql/pg_grant",
 	require => Service['postgresql'],
-	cwd	=> "/usr/local/bin/",
   }
 }
 	
 class xbase {
-  $dir = "/usr/X11R6/lib"
+  $dir = "/usr/X11R6/bin/"
 
+  exec { 'chk_dir_exist':
+	command => "true",
+	onlyif => 'test -d ${dir}',
+  } 
 
-  exec { 'download ${xbase}':
-	command => "ftp -o - ${basemirror}${xbase} > ${tmpxbase}",
-	creates => "${tmpxbase}",
-	unless  => "test -d ${dir}",
+  file { 'xbase':
+	path => "${tmpxbase}",
+	ensure => file,
+	mode => '0600',
+	source => "${basemirror}/${xbase}",
+	require => Exec["chk_dir_exist"],
   }
 
-  exec { 'untar ${xbase}':
-	command => "tar zxpfh ${tmpxbase} -C /",
+  exec { 'untar ${xbase} if needed':
+	command => "/bin/tar zxpfh ${tmpxbase} -C /",
 	creates => "${dir}",
   }
-
   exec { 'ldconfig':
-	command => "ldconfig -m ${dir}",
+	command => "/sbin/ldconfig -m /usr/X11R6/lib",
   }
 
 }
@@ -320,9 +288,6 @@ class httpd {
   }
 }
 
-
-
-
 class php {
   	require xbase
   package { [ 'php-zip',
@@ -334,15 +299,16 @@ class php {
   ]: 
 	source => "${pkgmirror}",
 	ensure => "${phpver}",
+	#ensure => "latest",
 	require => Package['postgresql-server'],
-	#before	=> Package['owncloud'],
+	before	=> Package['owncloud'],
   }
-
+  
   file { "${phpbin}":
 	ensure => 'link',
 	target => "${phpbin}-${phpvetc}"
   }
-
+  
 $symlinks= [	'bz2', 
 		'curl', 
 		'gd', 
@@ -355,7 +321,7 @@ $symlinks= [	'bz2',
 
 # function call with lambda:
 $symlinks.each |String $symlinks| {
-        file {"/etc/php-${phpvetc}/${symlinks}.ini":
+	file {"/etc/php-${phpvetc}/${symlinks}.ini":
         ensure => link,
         target => "/etc/php-${phpvetc}.sample/${symlinks}.ini",
   }
@@ -367,24 +333,6 @@ $symlinks.each |String $symlinks| {
 
   # disable and stop other versions of php
   case $phpv {
-   '52':  { 
-	service { ['php53_fpm', 'php54_fpm']:
-	  ensure => stopped,
-	  enable => false,
-	}
-  }
-  '53':  { 
-	service { ['php52_fpm', 'php54_fpm']:
-	  ensure => stopped,
-	  enable => false,
-	}
-  }
-  '54':  { 
-	service { ['php52_fpm', 'php53_fpm','php55_fpm' ]:
-	  ensure => stopped,
-	  enable => false,
-	}
-  }
   '55':  { 
 	service { ['php56_fpm', 'php70_fpm']:
 	  ensure => stopped,
@@ -415,21 +363,21 @@ $symlinks.each |String $symlinks| {
 }
 
 class owncloud {
-  #require php
-  #require httpd
+  require php
+  require httpd
 # installs owncloud package and others as deps
   package { 'owncloud': 
 	source => "${pkgmirror}",
 	ensure => latest,
-	#require => [ Service["${phpservice}"], Service["httpd"] ]
-  #}
-
+	require => [ Service["${phpservice}"], Service["httpd"] ]
+  }
+include notice
 }
 
 class autoconfig {
   require owncloud
 
-  file { "${chrootdir}/owncloud/config/autoconfig.php":
+  file { '/var/www/owncloud/config/autoconfig.php':
     owner => 'www',
     group => 'www',
     mode => '0640',
@@ -443,24 +391,22 @@ class autoconfig {
 	\"dbpass\"	=> \"${owncloud_db_pass}\",
 	\"dbhost\"	=> \"localhost\",
 	\"install\"	=> \"true\",
-	); \n?>",
+	); \n",
   }
-}
 
+}
 
 class cron {
   require owncloud
   file { "${owncloud_cron}":
     ensure => "file"
-}
-
-cron { 'owncloud':
-   command => "${phpbin} ${owncloud_cron}",
-   user    => www,
-   hour    => '*',   
-   minute  => '*/15',
-   require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
   }
-}
 
+  cron { 'owncloud':   
+    command => "${phpbin} ${owncloud_cron}",
+    user    => www,
+    hour    => '*',   
+    minute  => '*/15',
+    require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
+  }
 }
