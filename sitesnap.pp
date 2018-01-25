@@ -315,9 +315,9 @@ $symlinks= [	'bz2',
 
 # function call with lambda:
 $symlinks.each |String $symlinks| {
-  	file {"${phpvetc}/${symlinks}.ini":
-    	ensure => link,
-    	target => "${phpvetc}.sample/${symlinks}.ini",
+	file {"/etc/php-${phpvetc}/${symlinks}.ini":
+        ensure => link,
+        target => "/etc/php-${phpvetc}.sample/${symlinks}.ini",
   }
 }
 
