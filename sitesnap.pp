@@ -37,6 +37,7 @@ include postgresql
 include owncloud
 #include notice 
 include autoconfig
+include cron
 
 class os {
   class clock {
@@ -347,4 +348,19 @@ class autoconfig {
 	); \n",
   }
 
+}
+
+class cron {
+  require owncloud
+  file { "${owncloud_cron}":
+    ensure => "file"
+  }
+
+  cron { 'owncloud':   
+    command => "${phpbin} ${owncloud_cron}",
+    user    => www,
+    hour    => '*',   
+    minute  => '*/15',
+    require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
+  }
 }
