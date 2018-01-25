@@ -2,13 +2,15 @@ include stdlib
 Exec { path => [  '/bin/', '/sbin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
 # puppet module install puppetlabs-stdlib 
 # os specific stuff 
-$arch=$::facts['processors']['isa']
+#$arch=$::facts['processors']['isa']
+$arch=$::facts['architecture']
 $mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
-$ip = $::facts['networking']['ip']
+#$ip = $::facts['networking']['ip']
+$ip = $::facts['ipaddress']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
 $chrootdir = "/var/www"
@@ -61,8 +63,8 @@ $phpbin = "/usr/local/bin/php"
 #[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "5.6" ]
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.16", "7.0" ]
 # for 6.2 snapshot
-[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "5.6" ]
-#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.23", "7.0" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "5.6" ]
+[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.23", "7.0" ]
 
 
 $phpservice = "php${phpv}_fpm"
@@ -72,12 +74,13 @@ include os
 include chroot
 include cert
 include postgresql
-#include xbase
-#include httpd
-#include php 
+include xbase
+include httpd
+include php 
 include owncloud
 include notice 
 include owncloud::autoconfig
+include owncloud::cron
 
 class os {
   class clock {
@@ -317,6 +320,9 @@ class httpd {
   }
 }
 
+
+
+
 class php {
   	require xbase
   package { [ 'php-zip',
@@ -329,7 +335,7 @@ class php {
 	source => "${pkgmirror}",
 	ensure => "${phpver}",
 	require => Package['postgresql-server'],
-	before	=> Package['owncloud'],
+	#before	=> Package['owncloud'],
   }
 
   file { "${phpbin}":
@@ -409,14 +415,16 @@ $symlinks.each |String $symlinks| {
 }
 
 class owncloud {
-  require php
-  require httpd
+  #require php
+  #require httpd
 # installs owncloud package and others as deps
   package { 'owncloud': 
 	source => "${pkgmirror}",
 	ensure => latest,
-	require => [ Service["${phpservice}"], Service["httpd"] ]
-  }
+	#require => [ Service["${phpservice}"], Service["httpd"] ]
+  #}
+
+}
 
 class autoconfig {
   require owncloud
@@ -439,16 +447,20 @@ class autoconfig {
   }
 }
 
-file { "${owncloud_cron}":
-	ensure => "file"
+
+class cron {
+  require owncloud
+  file { "${owncloud_cron}":
+    ensure => "file"
 }
 
-cron { 'owncloud':   
+cron { 'owncloud':
    command => "${phpbin} ${owncloud_cron}",
    user    => www,
    hour    => '*',   
    minute  => '*/15',
    require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
+  }
 }
 
 }
