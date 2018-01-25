@@ -26,6 +26,7 @@ $osminor = $::facts['os']['release']['minor']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
 $httpdconf = "/etc/httpd.conf"
+$chrootdir = "/var/www"
 $owncloud_cron = "${chrootdir}/owncloud/cron.php"
 
 include os
