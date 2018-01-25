@@ -1,33 +1,71 @@
 include stdlib
-Exec { path => [  '/bin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
-# puppet module install puppetlabs-stdlib --version 4.15.0
-
-#$arch=$::facts['processors']['isa']
-$arch=$::facts['architecture']
-$mirror = "http://piotrkosoft.net/pub/OpenBSD/snapshots/"
-#$mirror = "http://piotrkosoft.net/pub/OpenBSD/${::operatingsystemrelease}/"
+Exec { path => [  '/bin/', '/sbin/', '/usr/bin/' , '/usr/local/bin/', '/usr/sbin/' ] }
+# puppet module install puppetlabs-stdlib 
+# os specific stuff 
+$arch=$::facts['processors']['isa']
+$mirror = "http://ftp.icm.edu.pl/pub/OpenBSD/${::operatingsystemrelease}/"
 $pkgmirror ="${mirror}packages/${arch}/"
 $basemirror = "${mirror}${arch}/"
-$dbpass = "abc123"
-$adminlogin = "admin"
-$adminpass = "admin"
-$owncloud_db_pass = "d5a148be21b8f643105759af71bea852"
-$pgpass = "/tmp/.pgpass"
-$pguser = "_postgresql"
-$key = "/etc/ssl/private/${::fqdn}.key"
-$cert = "/etc/ssl/${::fqdn}.crt"
-
-# choose one of supported PHP versions:
-#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "/etc/php-5.6" ] 
-[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.23", "/etc/php-7.0" ] 
-$phpservice = "php${phpv}_fpm"
 $osmajor = $::facts['os']['release']['major']
 $osminor = $::facts['os']['release']['minor']
+$ip = $::facts['networking']['ip']
 $xbase = "xbase${osmajor}${osminor}.tgz"
 $tmpxbase = "/tmp/${xbase}"
-$httpdconf = "/etc/httpd.conf"
 $chrootdir = "/var/www"
+# postgresql stuff
+$dbpass = "changeme"
+$pgpass = "/tmp/.pgpass"
+$pguser = "_postgresql"
+# owncloud stuff
+$adminlogin = "admin"
+$adminpass = "admin"
+$owncloud_db_pass = "changeme"
 $owncloud_cron = "${chrootdir}/owncloud/cron.php"
+# cert stuff
+$key = "/etc/ssl/private/${::fqdn}.key"
+$cert = "/etc/ssl/${::fqdn}.crt"
+$httpdconf = "/etc/httpd.conf"
+$phpbin = "/usr/local/bin/php"
+# choose one of supported PHP versions:
+# for 5.2
+#[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p12", "5.2" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.14p1", "5.3" ]
+# for 5.3
+#[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p13", "5.2" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.21", "5.3" ]
+# for 5.4
+#[ $phpv, $phpver, $phpvetc ] = [ "52", "php-5.2.17p16", "5.2" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.27", "5.3" ]
+# for 5.5
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.28p2", "5.3" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.24", "5.4" ]
+# for 5.6
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.28p10", "5.3" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.30p0", "5.4" ]
+# for 5.7
+#[ $phpv, $phpver, $phpvetc ] = [ "53", "php-5.3.29p1", "5.3" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.38", "5.4" ]
+# for 5.8
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.43", "5.4" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "php-5.5.27", "5.5" ]
+# for 5.9
+#[ $phpv, $phpver, $phpvetc ] = [ "54", "php-5.4.45p2", "5.4" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "php-5.5.32", "5.5" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "php-5.6.18", "5.6" ]
+# for 6.0
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.37p0", "5.5" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.23p0", "5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.8p0", "7.0" ]
+# for 6.1
+#[ $phpv, $phpver, $phpvetc ] = [ "55", "5.5.38p0", "5.5" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.30", "5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.16", "7.0" ]
+# for 6.2 snapshot
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.31", "5.6" ]
+[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.23", "7.0" ]
+
+
+$phpservice = "php${phpv}_fpm"
 
 include os
 include chroot
