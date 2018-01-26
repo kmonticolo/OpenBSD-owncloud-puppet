@@ -12,6 +12,10 @@ check() {
   fi
 }
 
+echo -----------------------------=== $((i=i+1)) check pkg.conf ===-----------------------------
+grep ^installpath.*/pub/OpenBSD/$(uname -r)/packages/$(uname -m) /etc/pkg.conf
+check
+
 echo -----------------------------=== $((i=i+1)) open port 443 ===-----------------------------
 netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
 check
