@@ -59,12 +59,8 @@ echo -----------------------------=== $((i=i+1)) http master process ===--------
 ps auxw|grep ^root.*/usr/sbin/httpd
 check
 
-echo -----------------------------=== $((i=i+1)) php process ===-----------------------------
-ps auxw|grep php
-check
-
 echo -----------------------------=== $((i=i+1)) php fpm proc ===-----------------------------
-ps aux|grep php-fpm|grep "$PHPVER"
+ps aux|grep php-fpm-"$PHPVER"
 check
 
 echo
