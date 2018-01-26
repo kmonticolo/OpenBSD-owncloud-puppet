@@ -1,4 +1,8 @@
 #!/bin/sh
+
+PHPVER="7.0"
+IP=$(ifconfig|grep inet|grep broadcast|awk '{print $2}')
+
 # 14 quick and dirty tests
 check() {
   if ( [ $err_flag ] ); then
@@ -7,21 +11,30 @@ check() {
   fi
 }
 
-echo -----------------------------=== $((i=i+1)) OPEN PORTS 443 and 5432 ===-----------------------------
+#test() {
+#  echo -----------------------------=== $((i=i+1)) $1  ===-----------------------------
+#  $2 || err_flag=$i
+#  check
+#  echo
+#}
+
+echo -----------------------------=== $((i=i+1)) open port 443 ===-----------------------------
 netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
-netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
 check
 echo
 
+echo -----------------------------=== $((i=i+1)) open port 5432 on localhost ===-----------------------------
+netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
+check
+echo
 # todo disable ipv6
 
-
-echo -----------------------------=== $((i=i+1)) cron www ===-----------------------------
+echo -----------------------------=== $((i=i+1)) cron entry for www user ===-----------------------------
 
 crontab -u www -l|grep owncloud || err_flag=$i
 check
 
-echo -----------------------------=== $((i=i+1)) cron.php file ===-----------------------------
+echo -----------------------------=== $((i=i+1)) cron.php file exists ===-----------------------------
 ls -l /var/www/owncloud/cron.php || err_flag=$i
 check
 echo
@@ -41,6 +54,11 @@ check
 echo -----------------------------=== $((i=i+1)) php process ===-----------------------------
 ps auxw|grep php || err_flag=$i
 check
+
+echo -----------------------------=== $((i=i+1)) php fpm proc ===-----------------------------
+ps aux|grep php-fpm|grep "$PHPVER" || err_flag=$i
+check
+echo
 
 echo
 # todo grep for versions
@@ -89,18 +107,12 @@ check
 echo
 
 echo -----------------------------=== $((i=i+1)) symlinks php ===-----------------------------
-for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip; do ls /etc/php-7.0/"$a".ini || err_flag=$i ;done
+for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip; do ls /etc/php-"$PHPVER"/"$a".ini || err_flag=$i ;done
 check
 echo
 
-echo -----------------------------=== $((i=i+1)) php fpm proc ===-----------------------------
-ps aux|grep php-fpm|grep 7.0 || err_flag=$i
-check
-echo
 
 echo -----------------------------=== $((i=i+1))  website ===-----------------------------
-#curl -vk https://192.168.1.131/owncloud/index.php
-#curl -vk https://192.168.1.131/owncloud/index.php/login
-curl -svk https://192.168.1.131/owncloud/index.php 2>x; grep owncloud x || err_flag=$i; rm x
+curl -svk https://"$IP"/owncloud/index.php 2>x; grep owncloud x || err_flag=$i; rm x
 check
 echo
