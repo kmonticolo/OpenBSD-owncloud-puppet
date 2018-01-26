@@ -116,3 +116,8 @@ echo -----------------------------=== $((i=i+1))  website ===-------------------
 curl -svk https://"$IP"/owncloud/index.php 2>x; grep owncloud x || err_flag=$i; rm x
 check
 echo
+
+echo
+echo
+echo ALL TEST PASSED
+echo END
