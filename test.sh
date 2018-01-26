@@ -97,8 +97,8 @@ echo -----------------------------=== $((i=i+1)) symlinks php ===---------------
 for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip; do ls /etc/php-"$PHPVER"/"$a".ini || err_flag=$i ;done
 check
 
-echo -----------------------------=== $((i=i+1))  website ===-----------------------------
-curl -svk https://"$IP"/owncloud/index.php 2>x; grep owncloud x || err_flag=$i; rm x
+echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
+curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x || err_flag=$i; rm x
 check
 
 echo; echo
