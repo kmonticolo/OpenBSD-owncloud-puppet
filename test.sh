@@ -57,7 +57,7 @@ pkg_info |grep -E '(httpd|php|postgres|owncloud)' || err_flag=$i
 check
 
 echo -----------------------------=== $((i=i+1)) php version ===--------------------------------
-ls -l `which php` || err_flag=$i
+which php || err_flag=$i
 check
 
 echo -----------------------------=== $((i=i+1)) mount point /var with nodev ===-----------------------------
