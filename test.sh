@@ -41,13 +41,22 @@ ls -l /var/www/owncloud/cron.php
 check
 
 echo -----------------------------=== $((i=i+1)) cron process ===-----------------------------
-ps auxw|grep "sbin/cron"
+ps auxw|grep "^root.*/usr/sbin/cron"
 check
 
 # chroot ?
 
-echo -----------------------------=== $((i=i+1)) http process ===-----------------------------
-ps auxw|grep httpd
+
+echo -----------------------------=== $((i=i+1)) httpd worker process ===-----------------------------
+ps auxw|grep ^www.*httpd:\ server
+check
+
+echo -----------------------------=== $((i=i+1)) http logger process ===-----------------------------
+ps auxw|grep ^www.*httpd:\ logger
+check
+
+echo -----------------------------=== $((i=i+1)) http master process ===-----------------------------
+ps auxw|grep ^root.*/usr/sbin/httpd
 check
 
 echo -----------------------------=== $((i=i+1)) php process ===-----------------------------
