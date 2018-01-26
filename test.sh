@@ -6,10 +6,6 @@ check() {
   exit 1
   fi
 }
-echo -----------------------------=== $((i=i+1)) OPEN PORTS 443 and 5432 ===-----------------------------
-netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
-netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
-check
 
 echo
 
@@ -96,4 +92,9 @@ echo
 echo -----------------------------=== $((i=i+1)) php fpm proc ===-----------------------------
 ps aux|grep php-fpm|grep 7.0 || err_flag=$i
 check
+echo
 
+echo -----------------------------=== $((i=i+1)) OPEN PORTS 443 and 5432 ===-----------------------------
+netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
+netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
+check
