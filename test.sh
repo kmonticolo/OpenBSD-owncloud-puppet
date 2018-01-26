@@ -15,15 +15,15 @@ check() {
 
 
 echo -----------------------------=== $((i=i+1)) check postgresql ===-----------------------------
-/usr/local/bin/pg_isready || err_flag=$i
+/usr/local/bin/pg_isready
 check
 
 echo -----------------------------=== $((i=i+1)) open port 5432 on localhost ===-----------------------------
-netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
+netstat -aln|grep LIST  |grep 127.0.0.1.5432
 check
 
 echo -----------------------------=== $((i=i+1)) open port 443 ===-----------------------------
-netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
+netstat -aln|grep LIST  |grep \*.443
 check
 
 echo -----------------------------=== $((i=i+1)) check pkg.conf ===-----------------------------
@@ -33,12 +33,11 @@ check
 # todo disable ipv6
 
 echo -----------------------------=== $((i=i+1)) cron entry for www user ===-----------------------------
-
-crontab -u www -l|grep owncloud || err_flag=$i
+crontab -u www -l|grep owncloud
 check
 
 echo -----------------------------=== $((i=i+1)) cron.php file exists ===-----------------------------
-ls -l /var/www/owncloud/cron.php || err_flag=$i
+ls -l /var/www/owncloud/cron.php
 check
 
 echo -----------------------------=== $((i=i+1)) cron process ===-----------------------------
@@ -48,30 +47,29 @@ check
 # chroot ?
 
 echo -----------------------------=== $((i=i+1)) http process ===-----------------------------
-
-ps auxw|grep httpd || err_flag=$i
+ps auxw|grep httpd
 check
 
 echo -----------------------------=== $((i=i+1)) php process ===-----------------------------
-ps auxw|grep php || err_flag=$i
+ps auxw|grep php
 check
 
 echo -----------------------------=== $((i=i+1)) php fpm proc ===-----------------------------
-ps aux|grep php-fpm|grep "$PHPVER" || err_flag=$i
+ps aux|grep php-fpm|grep "$PHPVER"
 check
 
 echo
 # todo grep for versions
 echo -----------------------------=== $((i=i+1)) packages ===-----------------------------
-pkg_info |grep -E '(httpd|php|postgres|owncloud)' || err_flag=$i
+pkg_info |grep -E '(httpd|php|postgres|owncloud)'
 check
 
 echo -----------------------------=== $((i=i+1)) is php a "$PHPVER" symlink ===--------------------------------
-f=php ; which $f && ls -l `which $f`|grep "$PHPVER" || err_flag=$i
+f=php ; which $f && ls -l `which $f`|grep "$PHPVER"
 check
 
 echo -----------------------------=== $((i=i+1)) mount point /var with nodev ===-----------------------------
-mount |grep "/var"|grep nodev || err_flag=$i
+mount |grep "/var"|grep nodev
 check
 
 # database todo
@@ -79,34 +77,35 @@ check
 # log to db and check owncloud db
     
 echo -----------------------------=== $((i=i+1)) ssl cert ===-----------------------------
-file /etc/ssl/*.crt|grep PEM || err_flag=$i
+file /etc/ssl/*.crt|grep PEM
 check
 
 echo -----------------------------=== $((i=i+1)) ssl key ===-----------------------------
-head -1 /etc/ssl/private/*key|grep PRIVATE || err_flag=$i
+head -1 /etc/ssl/private/*key|grep PRIVATE
 check
 
 echo
 echo -----------------------------=== $((i=i+1)) chroot files ===-----------------------------
-file /var/www/usr/share/locale/UTF-8/LC_CTYPE |grep Citrus || err_flag=$i
+file /var/www/usr/share/locale/UTF-8/LC_CTYPE |grep Citrus
 check
 
 echo -----------------------------=== $((i=i+1)) system users ===-----------------------------
-id _postgresql  || err_flag=$i
+id _postgresql
 check
 
 echo -----------------------------=== $((i=i+1)) x11 dir ===-----------------------------
 
-ls -ld /usr/X11R6/bin/ || err_flag=$i
+ls -ld /usr/X11R6/bin/
 check
 
 echo -----------------------------=== $((i=i+1)) symlinks php ===-----------------------------
-for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip; do ls /etc/php-"$PHPVER"/"$a".ini || err_flag=$i ;done
+for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do ls /etc/php-"$PHPVER"/"$a".ini ; done
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
-curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x || err_flag=$i; rm x
+curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
 check
+rm x
 
 echo; echo
 echo SUCCESS: ALL "$i" TESTS PASSED
