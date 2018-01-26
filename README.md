@@ -1,4 +1,4 @@
-[![Build Status](http://migotka.tk:8000/job/1-62-owncloud-puppet-deploy/badge/icon)]
+![Build Status](http://migotka.tk:8000/job/1-62-owncloud-puppet-deploy/badge/icon)
 # OpenBSD-owncloud-puppet
 Puppet boilerplate manifest to unattended installation owncloud on OpenBSD's httpd with chroot, just for my learning purpouses.
 
