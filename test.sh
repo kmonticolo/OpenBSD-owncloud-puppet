@@ -7,17 +7,14 @@ check() {
   fi
 }
 
+echo -----------------------------=== $((i=i+1)) OPEN PORTS 443 and 5432 ===-----------------------------
+netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
+netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
+check
 echo
 
 # todo disable ipv6
 
-echo -----------------------------=== $((i=i+1))  website ===-----------------------------
-#curl -vk https://192.168.1.131/owncloud/index.php
-#curl -vk https://192.168.1.131/owncloud/index.php/login
-
-curl -svk https://192.168.1.131/owncloud/index.php 2>x; grep owncloud x || err_flag=$i; rm x
-check
-echo
 
 echo -----------------------------=== $((i=i+1)) cron ===-----------------------------
 
@@ -94,7 +91,9 @@ ps aux|grep php-fpm|grep 7.0 || err_flag=$i
 check
 echo
 
-echo -----------------------------=== $((i=i+1)) OPEN PORTS 443 and 5432 ===-----------------------------
-netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
-netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
+echo -----------------------------=== $((i=i+1))  website ===-----------------------------
+#curl -vk https://192.168.1.131/owncloud/index.php
+#curl -vk https://192.168.1.131/owncloud/index.php/login
+curl -svk https://192.168.1.131/owncloud/index.php 2>x; grep owncloud x || err_flag=$i; rm x
 check
+echo
