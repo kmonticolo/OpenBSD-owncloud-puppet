@@ -5,6 +5,7 @@ IP=$(ifconfig|grep inet|grep broadcast|awk '{print $2}')
 
 # 14 quick and dirty tests
 check() {
+  [ "$?" -eq "0" ] || err_flag=$i
   echo
   if ( [ $err_flag ] ); then
   echo ERROR at step $i
