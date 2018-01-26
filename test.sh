@@ -12,16 +12,21 @@ check() {
   fi
 }
 
-echo -----------------------------=== $((i=i+1)) check pkg.conf ===-----------------------------
-grep ^installpath.*/pub/OpenBSD/$(uname -r)/packages/$(uname -m) /etc/pkg.conf
+
+echo -----------------------------=== $((i=i+1)) check postgresql ===-----------------------------
+/usr/local/bin/pg_isready || err_flag=$i
+check
+
+echo -----------------------------=== $((i=i+1)) open port 5432 on localhost ===-----------------------------
+netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
 check
 
 echo -----------------------------=== $((i=i+1)) open port 443 ===-----------------------------
 netstat -aln|grep LIST  |grep \*.443 || err_flag=$i
 check
 
-echo -----------------------------=== $((i=i+1)) open port 5432 on localhost ===-----------------------------
-netstat -aln|grep LIST  |grep 127.0.0.1.5432 || err_flag=$i
+echo -----------------------------=== $((i=i+1)) check pkg.conf ===-----------------------------
+grep ^installpath.*/pub/OpenBSD/$(uname -r)/packages/$(uname -m) /etc/pkg.conf
 check
 
 # todo disable ipv6
@@ -69,6 +74,7 @@ mount |grep "/var"|grep nodev || err_flag=$i
 check
 
 # database todo
+
 # log to db and check owncloud db
     
 echo -----------------------------=== $((i=i+1)) ssl cert ===-----------------------------
