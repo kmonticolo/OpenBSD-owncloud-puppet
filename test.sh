@@ -16,22 +16,29 @@ echo
 # todo disable ipv6
 
 
-echo -----------------------------=== $((i=i+1)) cron ===-----------------------------
+echo -----------------------------=== $((i=i+1)) cron www ===-----------------------------
 
 crontab -u www -l|grep owncloud || err_flag=$i
 check
 
+echo -----------------------------=== $((i=i+1)) cron.php file ===-----------------------------
 ls -l /var/www/owncloud/cron.php || err_flag=$i
+check
+echo
+
+echo -----------------------------=== $((i=i+1)) cron process ===-----------------------------
+ps auxw|grep "sbin/cron"
 check
 echo
 
 # chroot ?
 
-echo -----------------------------=== $((i=i+1)) proc ===-----------------------------
+echo -----------------------------=== $((i=i+1)) http process ===-----------------------------
 
 ps auxw|grep httpd || err_flag=$i
 check
 
+echo -----------------------------=== $((i=i+1)) php process ===-----------------------------
 ps auxw|grep php || err_flag=$i
 check
 
