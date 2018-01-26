@@ -102,5 +102,5 @@ curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|own
 check
 
 echo; echo
-echo ALL TEST PASSED
+echo SUCCESS: ALL "$i" TESTS PASSED
 echo END
