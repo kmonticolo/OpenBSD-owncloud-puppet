@@ -63,7 +63,10 @@ echo -----------------------------=== $((i=i+1)) php fpm proc ===---------------
 ps aux|grep php-fpm-"$PHPVER"
 check
 
-echo
+echo -----------------------------=== $((i=i+1)) php version ===-----------------------------
+php -version |grep "$PHPVER"
+check
+
 # todo grep for versions
 echo -----------------------------=== $((i=i+1)) packages ===-----------------------------
 pkg_info |grep -E '(httpd|php|postgres|owncloud)'
