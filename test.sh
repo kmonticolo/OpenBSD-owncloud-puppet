@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PHPVER="7.0"
+PHPVER=$(grep ^\\[.*\$phpvetc site.pp |cut -f 6 -d\")
 IP=$(ifconfig|grep inet|grep broadcast|awk '{print $2}')
 
 # 14 quick and dirty tests
@@ -46,6 +46,7 @@ check
 
 # chroot ?
 
+<<<<<<< HEAD
 
 echo -----------------------------=== $((i=i+1)) httpd worker process ===-----------------------------
 ps auxw|grep ^www.*httpd:\ server
@@ -55,16 +56,47 @@ echo -----------------------------=== $((i=i+1)) http logger process ===--------
 ps auxw|grep ^www.*httpd:\ logger
 check
 
+=======
+echo -----------------------------=== $((i=i+1)) httpd config crt entry ===-----------------------------
+grep ^certificate\ \"/etc/ssl/$(facter fqdn).crt\" /etc/httpd.conf
+check
+
+echo -----------------------------=== $((i=i+1)) httpd config key entry ===-----------------------------
+grep ^key\ \"/etc/ssl/private/$(facter fqdn).key\" /etc/httpd.conf
+check
+
+echo -----------------------------=== $((i=i+1)) httpd config server entry ===-----------------------------
+grep ^server\ \""$(facter fqdn)"\" /etc/httpd.conf
+check
+
+echo -----------------------------=== $((i=i+1)) httpd config listen entry ===-----------------------------
+listen=$(grep \$listen  site.pp|cut -f2 -d\")
+check
+grep ^ext_if=\""${listen}"\" /etc/httpd.conf
+check
+
+echo -----------------------------=== $((i=i+1)) httpd worker process ===-----------------------------
+ps auxw|grep ^www.*httpd:\ server
+check
+
+echo -----------------------------=== $((i=i+1)) http logger process ===-----------------------------
+ps auxw|grep ^www.*httpd:\ logger
+check
+
+>>>>>>> develop
 echo -----------------------------=== $((i=i+1)) http master process ===-----------------------------
 ps auxw|grep ^root.*/usr/sbin/httpd
 check
 
 echo -----------------------------=== $((i=i+1)) php fpm proc ===-----------------------------
 ps aux|grep php-fpm-"$PHPVER"
+<<<<<<< HEAD
 check
 
 echo -----------------------------=== $((i=i+1)) php version ===-----------------------------
 php -version |grep "$PHPVER"
+=======
+>>>>>>> develop
 check
 
 # todo grep for versions
@@ -111,7 +143,11 @@ for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do ls /etc/php-"$PHPVER"/
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
+<<<<<<< HEAD
 curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
+=======
+curl -svk https://"$IP"/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
+>>>>>>> develop
 check
 rm x
 
