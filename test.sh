@@ -46,15 +46,6 @@ check
 
 # chroot ?
 
-
-echo -----------------------------=== $((i=i+1)) httpd worker process ===-----------------------------
-ps auxw|grep ^www.*httpd:\ server
-check
-
-echo -----------------------------=== $((i=i+1)) http logger process ===-----------------------------
-ps auxw|grep ^www.*httpd:\ logger
-check
-
 echo -----------------------------=== $((i=i+1)) httpd config crt entry ===-----------------------------
 grep ^certificate\ \"/etc/ssl/$(facter fqdn).crt\" /etc/httpd.conf
 check
@@ -89,10 +80,7 @@ echo -----------------------------=== $((i=i+1)) php fpm proc ===---------------
 ps aux|grep php-fpm-"$PHPVER"
 check
 
-echo -----------------------------=== $((i=i+1)) php version ===-----------------------------
-php -version |grep "$PHPVER"
-check
-
+echo
 # todo grep for versions
 echo -----------------------------=== $((i=i+1)) packages ===-----------------------------
 pkg_info |grep -E '(httpd|php|postgres|owncloud)'
@@ -137,7 +125,6 @@ for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do ls /etc/php-"$PHPVER"/
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
-curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
 curl -svk https://"$IP"/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
 check
 rm x
