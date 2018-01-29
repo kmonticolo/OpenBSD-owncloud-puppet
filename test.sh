@@ -119,7 +119,7 @@ for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do ls /etc/php-"$PHPVER"/
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
-curl -svk https://192.168.1.131/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
+curl -svk https://"$IP"/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
 check
 rm x
 
