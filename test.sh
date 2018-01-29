@@ -46,6 +46,17 @@ check
 
 # chroot ?
 
+echo -----------------------------=== $((i=i+1)) httpd config crt entry ===-----------------------------
+grep ^certificate\ \"/etc/ssl/$(facter fqdn).crt\" /etc/httpd.conf
+check
+
+echo -----------------------------=== $((i=i+1)) httpd config key entry ===-----------------------------
+grep ^key\ \"/etc/ssl/private/$(facter fqdn).key\" /etc/httpd.conf
+check
+
+echo -----------------------------=== $((i=i+1)) httpd config server entry ===-----------------------------
+grep ^server\ \""$(facter fqdn)"\" /etc/httpd.conf
+check
 
 echo -----------------------------=== $((i=i+1)) httpd worker process ===-----------------------------
 ps auxw|grep ^www.*httpd:\ server
