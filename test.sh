@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PHPVER="7.0"
+PHPVER=$(grep ^\\[.*\$phpvetc site.pp |cut -f 6 -d\")
 IP=$(ifconfig|grep inet|grep broadcast|awk '{print $2}')
 
 # 14 quick and dirty tests
