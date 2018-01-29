@@ -25,6 +25,7 @@ $owncloud_cron = "${chrootdir}/owncloud/cron.php"
 $key = "/etc/ssl/private/${::fqdn}.key"
 $cert = "/etc/ssl/${::fqdn}.crt"
 $httpdconf = "/etc/httpd.conf"
+$listen = "0.0.0.0"
 $phpbin = "/usr/local/bin/php"
 # choose one of supported PHP versions:
 # for 5.2
@@ -273,7 +274,7 @@ class httpd {
   }->
   file_line { 'replace egress':
 	path => "${httpdconf}",
-  	line => "ext_if=\"0.0.0.0\"",
+  	line => "ext_if=\"${listen}\"",
   	match   => "^ext_if.*$",
   	notify => Service["httpd"],
   	require => File["${httpdconf}"],
