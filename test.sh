@@ -112,7 +112,9 @@ file /var/www/usr/share/locale/UTF-8/LC_CTYPE |grep Citrus
 check
 
 echo -----------------------------=== $((i=i+1)) system users ===-----------------------------
-id _postgresql
+pguser=$(grep ^\$pguser site.pp |cut -f2 -d\")
+check
+id $pguser
 check
 
 echo -----------------------------=== $((i=i+1)) x11 dir ===-----------------------------
