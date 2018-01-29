@@ -120,6 +120,10 @@ class chroot {
 	source => '/etc/hosts'
   }	
 
+  file { '/var/www/dev/MAKEDEV':
+        source => '/dev/MAKEDEV'
+  }
+
   file { '/var/www/etc/resolv.conf':
 	source => '/etc/resolv.conf'
   }	
