@@ -89,6 +89,8 @@ check
 echo -----------------------------=== $((i=i+1)) is php a "$PHPVER" symlink ===--------------------------------
 f=php ; which $f && ls -l `which $f`|grep "$PHPVER"
 check
+test -L $(which php)
+check
 
 echo -----------------------------=== $((i=i+1)) mount point /var with nodev ===-----------------------------
 mount |grep "/var"|grep nodev
