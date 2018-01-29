@@ -8,7 +8,7 @@ check() {
   [ "$?" -eq "0" ] || err_flag=$i
   echo
   if ( [ $err_flag ] ); then
-  echo ERROR at step $i
+  echo ERROR at step $i - $1
   exit 1
   fi
 }
@@ -126,7 +126,7 @@ ls -ld /usr/X11R6/bin/
 check
 
 echo -----------------------------=== $((i=i+1)) symlinks php ===-----------------------------
-for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do ls /etc/php-"$PHPVER"/"$a".ini ; done
+for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do test -L /etc/php-"$PHPVER"/"$a".ini ; check /etc/php-"$PHPVER"/"$a".ini; done
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
