@@ -15,6 +15,8 @@ and simply install owncloud using:
 ```
 sudo puppet apply site.pp
 ```
+Note: as puppet uses /var partition, which is remount when manifest is running, you will probably need to apply it twice.
+
 After installation go to `https://IP/index.html/index.php`
 This instance will be using a self-signed certificate, so you will have to add an exception for this in your web browser.
 
