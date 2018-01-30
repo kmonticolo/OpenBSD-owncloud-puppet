@@ -408,6 +408,7 @@ class cron {
     user    => www,
     hour    => '*',   
     minute  => '*/15',
-    require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
+    require => [ File["${owncloud_cron}"], File["${phpbin}"] ],
+    notify => Service["cron"]
   }
 }
