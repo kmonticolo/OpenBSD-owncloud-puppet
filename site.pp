@@ -104,6 +104,7 @@ notice (" user and dbname: owncloud. URL: https://${::ipaddress}/index.html ")
 class chroot {
   file { [ '/var/www/usr',
 	 '/var/www/etc',
+	 '/var/www/dev',
 	 '/var/www/usr/share',
          '/var/www/usr/share/locale',
          '/var/www/usr/share/locale/UTF-8/', ]:
@@ -121,12 +122,42 @@ class chroot {
   }	
 
   file { '/var/www/dev/MAKEDEV':
-        source => '/dev/MAKEDEV'
+        source => '/dev/MAKEDEV',
+	require => File['/var/www/dev/']
   }
 
   file { '/var/www/etc/resolv.conf':
 	source => '/etc/resolv.conf'
   }	
+  exec { 'remove nodev option from /var mountpoint':
+        command => "cp /etc/fstab /etc/fstab.orig; grep  /var /etc/fstab |sed 's/\(.*\)nodev,/\1/' >/tmp/x; grep -v /var /etc/fstab >/tmp/y ; cat /tmp/x >>/tmp/y ; cp -f /tmp/y /etc/fstab; rm -f /tmp/x /tmp/y",
+        cwd => '/',
+        user => root,
+        onlyif => 'grep -q /var.*nodev /etc/fstab',
+  }
+
+
+
+  exec { 'force umount /var':
+        command => 'umount -f /var',
+        cwd => '/',
+        user => root,
+	onlyif => 'mount | grep -q /var.*nodev',
+  }
+
+  exec { 'mount /var again':
+        #command => 'mount -u -o dev /var',
+        command => 'mount -o dev /var',
+        cwd => '/',
+        user => root,
+  }
+
+  exec { 'generate chroot dev subsystem':
+	command => 'sh MAKEDEV urandom',
+	cwd => '/var/www/dev',
+	user => root,
+	creates => "/var/www/dev/urandom",
+  }
 }
 
 class cert {
