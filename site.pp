@@ -402,12 +402,19 @@ class cron {
   file { "${owncloud_cron}":
     ensure => "file"
   }
-
+  
+  service { 'cron':
+	ensure => running,
+	enable => true,
+	hasstatus => true,
+	
+  }
   cron { 'owncloud':   
     command => "${phpbin} ${owncloud_cron}",
     user    => www,
     hour    => '*',   
     minute  => '*/15',
-    require => [ File["${owncloud_cron}"], File["${phpbin}"] ]
-  }
+    require => [ File["${owncloud_cron}"], File["${phpbin}"] ],
+    notify => Service["cron"]
+ }
 }
