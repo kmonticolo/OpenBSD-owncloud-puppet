@@ -147,7 +147,7 @@ class chroot {
 
   exec { 'mount /var again':
         #command => 'mount -u -o dev /var',
-        command => 'mount -o dev /var',
+        command => 'mount /var',
         cwd => '/',
         user => root,
   }
