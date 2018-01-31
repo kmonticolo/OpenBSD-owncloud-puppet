@@ -441,6 +441,7 @@ class cron {
 	ensure => running,
 	enable => true,
 	hasstatus => true,
+	hasrestart => true
 	
   }
   cron { 'owncloud':   
