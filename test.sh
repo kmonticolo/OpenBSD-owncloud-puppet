@@ -8,7 +8,7 @@ check() {
   [ "$?" -eq "0" ] || err_flag=$i
   echo
   if ( [ $err_flag ] ); then
-  echo ERROR at step $i
+  echo ERROR at step $i - $1
   exit 1
   fi
 }
@@ -44,7 +44,6 @@ echo -----------------------------=== $((i=i+1)) cron process ===---------------
 ps auxw|grep "^root.*/usr/sbin/cron"
 check
 
-# chroot ?
 
 echo -----------------------------=== $((i=i+1)) httpd config crt entry ===-----------------------------
 grep ^certificate\ \"/etc/ssl/$(facter fqdn).crt\" /etc/httpd.conf
@@ -92,8 +91,9 @@ check
 test -L $(which php)
 check
 
-echo -----------------------------=== $((i=i+1)) mount point /var with nodev ===-----------------------------
-mount |grep "/var"|grep nodev
+# chroot ?
+echo -----------------------------=== $((i=i+1)) chroot - mount point /var without nodev ===-----------------------------
+mount |grep  "/var"|grep -vw nodev
 check
 
 # database todo
@@ -108,10 +108,19 @@ echo -----------------------------=== $((i=i+1)) ssl key ===--------------------
 head -1 /etc/ssl/private/*key|grep PRIVATE
 check
 
-echo
 echo -----------------------------=== $((i=i+1)) chroot files ===-----------------------------
 file /var/www/usr/share/locale/UTF-8/LC_CTYPE |grep Citrus
 check
+
+echo -----------------------------=== $((i=i+1)) chroot test special random files ===-----------------------------
+test -c /var/www/dev/arandom
+check /var/www/dev/arandom
+test -c /var/www/dev/random
+check /var/www/dev/random
+test -c /var/www/dev/srandom
+check /var/www/dev/srandom
+test -c /var/www/dev/urandom
+check /var/www/dev/urandom
 
 echo -----------------------------=== $((i=i+1)) system users ===-----------------------------
 pguser=$(grep ^\$pguser site.pp |cut -f2 -d\")
@@ -126,7 +135,7 @@ ls -ld /usr/X11R6/bin/
 check
 
 echo -----------------------------=== $((i=i+1)) symlinks php ===-----------------------------
-for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do ls /etc/php-"$PHPVER"/"$a".ini ; done
+for a in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do test -L /etc/php-"$PHPVER"/"$a".ini ; check /etc/php-"$PHPVER"/"$a".ini; done
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
