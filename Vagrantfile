@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ryanmaclean/openbsd-6.0"
+  config.vm.box = "kmonticolo/openbsd62"
   config.vm.hostname = "openbsd60.nplusn.com"
   config.vm.network "public_network"
   config.vm.provision "shell", inline: <<-SHELL
