@@ -14,5 +14,6 @@ Vagrant.configure("2") do |config|
    for i in /usr/local/bin/*[0-9][0-9]; do j=`echo $i | sed 's/[0-9][0-9]$//'`; test -L $j || ln -s $i $j;done
    puppet module list|grep -q stdlib || puppet module install puppetlabs-stdlib
    puppet apply /home/vagrant/site.pp
+   puppet apply /home/vagrant/site.pp # need to apply twice because of /var remount
    SHELL
 end
