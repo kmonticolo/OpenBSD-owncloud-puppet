@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "kmonticolo/openbsd62"
-  config.vm.hostname = "openbsd60.nplusn.com"
+  config.vm.hostname = "openbsd62.local"
   config.vm.network "public_network"
   config.vm.provision "shell", inline: <<-SHELL
    ftp -o - https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/develop/site.pp >site.pp
