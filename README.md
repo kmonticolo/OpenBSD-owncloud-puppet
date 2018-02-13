@@ -2,6 +2,15 @@
 # OpenBSD-owncloud-puppet
 Puppet boilerplate manifest to unattended installation owncloud on OpenBSD's httpd with chroot, just for my learning purpouses.
 
+Vagrant install:
+```
+git clone git@github.com:kmonticolo/OpenBSD-owncloud-puppet.git
+vagrant up
+vagrant provision
+
+```
+
+Standalone install:
 First, you need to install module as root: 
 ```
 sudo puppet module install puppetlabs-stdlib
