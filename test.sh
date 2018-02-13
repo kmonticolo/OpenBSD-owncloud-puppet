@@ -86,9 +86,9 @@ pkg_info |grep -E '(httpd|php|postgres|owncloud)'
 check
 
 echo -----------------------------=== $((i=i+1)) is php a "$PHPVER" symlink ===--------------------------------
-f=php ; which $f && ls -l `which $f`|grep "$PHPVER"
+f=php ; which $f && ls -l $(which $f) | grep "$PHPVER"
 check
-test -L $(which php)
+test -L $(which $f)
 check
 
 # chroot ?
