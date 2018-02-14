@@ -1,5 +1,6 @@
 ![Build Status](http://migotka.tk:8000/job/1-62-owncloud-puppet-deploy/badge/icon)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b45d32d1016f4cbd92313b9ed46e4609)](https://www.codacy.com/app/kmonticolo/OpenBSD-owncloud-puppet?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kmonticolo/OpenBSD-owncloud-puppet&amp;utm_campaign=Badge_Grade)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1647/badge)](https://bestpractices.coreinfrastructure.org/projects/1647)
 
 # OpenBSD-owncloud-puppet
 Puppet boilerplate manifest to unattended installation owncloud on OpenBSD's httpd with chroot, just for my learning purpouses.
