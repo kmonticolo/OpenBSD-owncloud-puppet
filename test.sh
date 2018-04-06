@@ -113,11 +113,7 @@ file /var/www/usr/share/locale/UTF-8/LC_CTYPE |grep Citrus
 check
 
 echo -----------------------------=== $((i=i+1)) chroot test special random files ===-----------------------------
-f=/var/www/dev/arandom
-echo -n $f' ' ; test -c $f ; check $f
 f=/var/www/dev/random
-echo -n $f' ' ; test -c $f ; check $f
-f=/var/www/dev/srandom
 echo -n $f' ' ; test -c $f ; check $f
 f=/var/www/dev/urandom
 echo -n $f' ' ; test -c $f ; check $f
