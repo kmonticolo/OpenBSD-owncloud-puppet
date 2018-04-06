@@ -130,7 +130,7 @@ class chroot {
 	source => '/etc/resolv.conf'
   }	
   exec { 'remove nodev option from /var mountpoint':
-        command => "cp /etc/fstab /etc/fstab.orig; sed -e"/\/var/s/nodev[,]*//" fstab.orig >/etc/fstab",
+        command => "cp /etc/fstab /etc/fstab.orig; sed -e"/\/var/s/nodev[,]*//" /etc/fstab.orig >/etc/fstab",
         cwd => '/',
         user => root,
         onlyif => 'grep -q /var.*nodev /etc/fstab',
