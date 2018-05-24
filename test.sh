@@ -1,7 +1,7 @@
 #!/bin/sh
 
 PHPVER=$(grep ^\\[.*\$phpvetc site.pp |cut -f 6 -d\")
-IP=$(ifconfig|grep inet.*broadcast|head -1|awk '{print $2}')
+#IP=$(ifconfig|grep inet.*broadcast|head -1|awk '{print $2}')
 
 
 # 14 quick and dirty tests
@@ -136,7 +136,7 @@ for f in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do echo -n $f" "; test -L
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
-curl -svk https://"$IP"/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
+curl -svk https://localhost/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
 check
 rm x
 
