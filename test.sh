@@ -132,7 +132,7 @@ ls -ld /usr/X11R6/bin/
 check
 
 echo -----------------------------=== $((i=i+1)) symlinks php ===-----------------------------
-for f in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do echo -n $f" "; test -L /etc/php-"$PHPVER"/"$f".ini ; check /etc/php-"$PHPVER"/"$f".ini; done
+for f in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do echo -n $f" "; test -L /etc/php-"$PHPVER"/"$f".ini ; check ; done
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
