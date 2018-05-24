@@ -136,7 +136,7 @@ for f in bz2 curl gd intl mcrypt pdo_pgsql pgsql zip ; do echo -n $f" "; test -L
 check
 
 echo -----------------------------=== $((i=i+1))  website status ===-----------------------------
-curl -svk https://localhost/owncloud/status.php 2>x; grep -E '(installed|owncloud)' x
+curl -svk https://localhost/owncloud/status.php 2>x; grep -qE '(installed|owncloud)' x
 check
 rm x
 
