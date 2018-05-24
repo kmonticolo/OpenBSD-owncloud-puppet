@@ -1,7 +1,8 @@
 #!/bin/sh
 
 PHPVER=$(grep ^\\[.*\$phpvetc site.pp |cut -f 6 -d\")
-IP=$(ifconfig|grep inet|grep broadcast|awk '{print $2}')
+IP=$(ifconfig|grep inet.*broadcast|head -1|awk '{print $2}')
+
 
 # 14 quick and dirty tests
 check() {
