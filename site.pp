@@ -336,6 +336,7 @@ class php {
   package { [ 'php-zip',
       	    'php-gd',
 	    'php-curl',
+	    'php-intl',
 	    'php',
 	    'php-pgsql',
 	    'php-pdo_pgsql'
