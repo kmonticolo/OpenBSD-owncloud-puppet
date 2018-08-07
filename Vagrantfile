@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "generic/openbsd6"
+  config.vm.box = "kmonticolo/openbsd62"
   config.vm.network "public_network"
   config.vm.provision "shell", inline: <<-SHELL
    ftp -o - https://raw.githubusercontent.com/kmonticolo/OpenBSD-owncloud-puppet/master/site.pp >site.pp
