@@ -72,6 +72,7 @@ $phpservice = "php${phpv}_fpm"
 
 include os
 include chroot
+#include remountvar
 include cert
 include postgresql
 #include xbase
@@ -132,6 +133,8 @@ class chroot {
   file { '/var/www/etc/resolv.conf':
 	source => '/etc/resolv.conf'
   }	
+
+class remountvar {
   exec { 'remove nodev option from /var mountpoint':
         command => "cp /etc/fstab /etc/fstab.orig; sed -e'/\/var/s/nodev[,]*//' /etc/fstab.orig >/etc/fstab",
         cwd => '/',
@@ -154,6 +157,7 @@ class chroot {
         cwd => '/',
         user => root,
   }
+}
 
   exec { 'generate chroot dev subsystem':
 	command => 'sh MAKEDEV urandom',
