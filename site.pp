@@ -67,7 +67,9 @@ $phpbin = "/usr/local/bin/php"
 # for 6.3
 #[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.34", "5.6" ]
 #[ $phpv, $phpver, $phpvetc ] = [ "70", "7.0.28", "7.0" ]
-
+# for 6.4
+#[ $phpv, $phpver, $phpvetc ] = [ "56", "5.6.38p0", "5.6" ]
+#[ $phpv, $phpver, $phpvetc ] = [ "70", "7.2.10", "7.2" ]
 
 $phpservice = "php${phpv}_fpm"
 
